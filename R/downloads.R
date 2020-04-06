@@ -118,11 +118,14 @@ phe <- function() {
     phe <- merge(phe, utla(), by = "GSS_CD", all.x = T)
     phe <- phe[order(phe$dl.dt),]
 
+    # clear out the commas and whitespace that someone inexplicably included
+    phe$TotalCases <- as.integer(gsub("\\s.","",gsub(",","",phe$TotalCases)))
+
     # calculate daily cases
     phe <- data.frame(data.table::rbindlist(sapply(unique(phe$GSS_CD), function(ccd) {
         cdata <- phe[phe$GSS_CD == ccd,]
         cdata <- cdata[order(cdata$dl.dt),]
-        cdata$NewCases <- c(NA, diff(cdata$TotalCases))
+        cdata$NewCases <- c(NA, diff(as.integer(gsub(" .","",cdata$TotalCases))))
         cdata
     }, simplify = F)))
 

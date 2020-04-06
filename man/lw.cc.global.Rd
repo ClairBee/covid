@@ -10,7 +10,7 @@ lw.cc.global(
   log = T,
   grid = F,
   deaths = T,
-  main = "Trajectory of confirmed cases"
+  main = NA
 )
 }
 \arguments{

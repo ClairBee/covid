@@ -305,17 +305,19 @@ lagged.cases <- function(c1, c2, log = F, show.original = F, show.lockdowns = F,
 lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
                          ccols = c("black", rbow(length(incl)-1)),
                          log = T, grid = F, deaths = T,
-                         main = "Trajectory of confirmed cases") {
+                         main = NA) {
     ecdc()
 
     if(deaths) {
         xrng <- c(1, max(data$cDeaths[data$geoid %in% incl], na.rm = T))
         yrng <- c(1, max(data$lw.deaths[data$geoid %in% incl], na.rm = T))
+        if(is.na(main)) main <- "Trajectory of Covid-19 deaths"
         xlb <- "Total confirmed deaths"
         ylb <- "Deaths in past week"
     } else {
         xrng <- c(100, max(data$cCases[data$geoid %in% incl], na.rm = T))
         yrng <- c(100, max(data$lw.cases[data$geoid %in% incl], na.rm = T))
+        if(is.na(main)) main <- "Trajectory of confirmed cases"
         xlb <- "Total confirmed cases"
         ylb <- "New confirmed cases in past week "
     }
