@@ -353,6 +353,66 @@ lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
 }
 
 
+
+
+#' Plot cases vs population size
+#'
+#' @param incl Vector of country codes to include
+#' @param icols Vector of colours to use for each country in incl
+#' @param log Boolean: use a log scale? Default is T.
+#' @param deaths Boolean: plot deaths? Default is F (plot cases)
+#' @param legend.rows Integer: how many rows in legend? Default is 5.
+#'
+#'  @export
+#'
+prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
+                       icols = c("magenta3", rbow(length(incl))[-1]), log = T, deaths = F,
+                       legend.rows = 5) {
+    if(deaths) {
+        ydata <- summ$tdeaths
+        props <- round(summ$dprop[match(incl, summ$geoid)], 2)
+        main <- "Total deaths vs population"
+        ylab <- "Total deaths reported"
+    } else {
+        ydata <- summ$tcases
+        props <- round(summ$cprop[match(incl, summ$geoid)], 2)
+        main <- "Total cases vs population"
+        props <- round(summ$cprop[match(incl, summ$geoid)], 2)
+        ylab <- "Total cases reported"
+    }
+
+    if(log) {
+        pop.units <- 1e6; c.units <- 1
+        suppressWarnings(plot(summ$pop2018/pop.units, ydata/c.units, col = "grey", log = "xy",
+                              xlab = "Population (millions)", ylab = ylab, xaxt = "n"))
+        axis(1, at = 10^{0:5}, labels = format(10^{0:5}, scientific = F))
+        axis(1, at = 10^-{1:2}, labels = format(10^-{1:2}, scientific = F))
+        lines(0.0001:1000,0.0001:1000*pop.units*0.01, col = "dimgrey", lty = "22")
+        lines(0.0001:1000,0.0001:1000*pop.units*0.005, col = "dimgrey", lty = "22")
+        text(c(0.008, 0.008), 0.008*pop.units*c(0.01, 0.005), c("1%", "0.5%"),
+             pos = c(3, 1), srt = 45, col = "dimgrey", cex = 0.8)
+        title(paste(main, "(log scale)"))
+        legend.pos <- "topleft"
+    } else {
+        pop.units <- 1e6; c.units <- 1
+        plot(summ$pop2018/pop.units, ydata/c.units, col = "grey",
+             xlab = "Population (millions)", ylab = ylab)
+        abline(0,pop.units*c(0.01, 0.005), col = "dimgrey", lty = "22")
+        text(1, 3e5, "1%", pos = 3, col = "dimgrey")
+        title(main)
+        legend.pos <- "topright"
+    }
+    invisible(sapply(1:length(incl), function(i) {
+        points(summ$pop2018[summ$geoid == incl[i]]/pop.units,
+               ydata[summ$geoid == incl[i]]/c.units,
+               bg = icols[i], pch = 21);
+    }))
+    legend(legend.pos, legend = paste0(incl, " (",props,")   "),
+           pch = 21, pt.bg = icols, ncol = ceiling(length(incl)/legend.rows), cex = 0.8)
+    title(paste0("Downloaded on ", format(max(data$daterep), "%Y-%m-%d")), line = 0.7, cex.main = 0.8)
+}
+
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # PLOTS - UK                                                                        ####
 

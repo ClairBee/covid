@@ -8,19 +8,14 @@
 #'
 ecdc <- function(dl.dt = NA) {
 
-    fpath <- "~/PhD/Misc-notes/Covid-19/data"
+    # get data from ECDC (download string updated on 2020-04-13)
+    data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
+                     na.strings = "", fileEncoding = "UTF-8-BOM")
 
-    # if download date not specified, open most recent download
-    if(is.na(dl.dt)) {
-        fnm <- max(list.files(fpath, pattern = "ecdc.+xlsx", full.names = T))
-    } else {
-        fnm <- paste0(fpath, "/ecdc-",dl.dt,".xlsx")
-    }
-
-    data <- data.frame(read_excel(fnm))
     colnames(data) <- tolower(colnames(data))
+    data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
 
-    # number of days since first case
+    # add date of & days since first case
     data$day.0 <- stats::ave(data$daterep, data$geoid, FUN = min)
     data$ndays <- as.integer(difftime(data$daterep, data$day.0, units = "day"))
 
@@ -41,9 +36,8 @@ ecdc <- function(dl.dt = NA) {
     data <- merge(data, date.d10, by = "geoid", all.x = T)
     data$d10days <- as.integer(difftime(data$daterep, data$date.d10, units = "day"))
 
-    data <- data[order(data$daterep),]
-
     # add weekly running total
+    data <- data[order(data$daterep),]
     cases.lwd <- sapply(sort(unique(data$daterep)[-(1:7)]), function(dt) {
         lw <- data[difftime(dt, data$daterep, units = "days") %in% (0:6),]
         df <- setNames(merge(aggregate(cases ~ geoid, data = lw, FUN = "sum"),
@@ -52,44 +46,19 @@ ecdc <- function(dl.dt = NA) {
         df$daterep <- dt
         df
     }, simplify = F)
-
     cases.lwd <- data.frame(data.table::rbindlist(cases.lwd))
     data <- merge(data, cases.lwd, by = c("geoid", "daterep"), all.x = T)
 
+    # summarise data per country
+    summ <- ddply(data, .(geoid), summarise, tcases = sum(cases), tdeaths = sum(deaths),
+                  pop2018 = mean(popdata2018))
+    summ$cprop <- 100 * summ$tcases / summ$pop2018
+    summ$dprop <- 100 * summ$tdeaths / summ$pop2018
+
     assign("data", data, envir = .GlobalEnv)
+    assign("summ", summ, envir = .GlobalEnv)
 }
 
-#' Download latest ECDC data
-#'
-#' Download latest Covid-19 infection data from ECDC website and prep for plotting etc
-#'
-#' @export
-#'
-get.ecdc <- function(dl.dt = format(Sys.Date(), "%Y-%m-%d")) {
-
-    library(readxl); library(httr)
-
-    # create the URL where the dataset is stored with automatic updates every day
-    last.dl <- gsub("\\.xlsx","",
-                    gsub("ecdc-","",
-                         max(list.files("~/PhD/Misc-notes/Covid-19/data",
-                                        pattern = "ecdc"))))
-    #download the dataset from the website to a local temporary file
-    url <- paste("https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-", dl.dt, ".xlsx", sep = "")
-    GET(url, authenticate(":", ":", type = "ntlm"), write_disk(tf <- tempfile(fileext = ".xlsx")))
-
-    # if file hasn't been updated today, get yesterday's data instead
-    if(file.size(tf) < 10^5) {
-        cat("No new ECDC data. Last download was",last.dl,"\n")
-    } else {
-        invisible(file.copy(from = tf,
-                            to = paste0("~/PhD/Misc-notes/Covid-19/data/ecdc-", dl.dt, ".xlsx"),
-                            overwrite = T))
-        cat("Downloaded ECDC data for", dl.dt, "\n")
-    }
-    # read latest data
-    ecdc()
-}
 
 
 
@@ -134,6 +103,31 @@ phe <- function() {
 }
 
 
+#' Download data from Tom White's github repo
+#'
+#' @export
+#'
+tw.data <- function() {
+
+    # download data from Tom White's repo
+    phe <- read.csv(text=getURL("https://raw.githubusercontent.com/tomwhite/covid-19-uk-data/master/data/covid-19-cases-uk.csv"))
+
+    phe$Date <- as.Date(phe$Date)
+    suppressWarnings(phe$TotalCases <- as.integer(phe$TotalCases))
+
+    phe$c100days <- round(difftime(phe$Date, as.POSIXct("2020-03-06", tz = "GMT"), units = "day"))
+    phe$d10days <- round(difftime(phe$Date, as.POSIXct("2020-03-15", tz = "GMT"), units = "day"))
+
+    phe <- phe[order(phe$Date), ]
+
+    phe <- data.frame(data.table::rbindlist(sapply(unique(phe$AreaCode),
+                                                   function(ccd) {
+                                                       cdata <- phe[phe$AreaCode == ccd, ]
+                                                       cdata$NewCases <- c(NA, diff(as.integer(gsub(" .", "", cdata$TotalCases))))
+                                                       cdata
+                                                   }, simplify = F)))
+    assign("uk.data", phe, envir = .GlobalEnv)
+}
 
 
 #' Download latest PHE data at county level
