@@ -10,6 +10,13 @@ phe.daily(
   archive = F
 )
 }
+\arguments{
+\item{highlight}{Vector of regions to highlight. Default is c("Hertfordshire", "Norfolk")}
+
+\item{hcols}{Vector of colours to use for highlighted regions. Default is c("black", "orange")}
+
+\item{archive}{Boolean: copy data to hard drive? Default is F}
+}
 \description{
 Download latest data from PHE & produce pdf of standard plots
 }

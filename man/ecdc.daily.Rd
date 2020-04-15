@@ -6,11 +6,14 @@
 \usage{
 ecdc.daily(
   countries = c("UK", "CN", "KR", "IT", "ES", "US"),
-  ccols = c("black", "forestgreen", "blue3", "dodgerblue", "darkgoldenrod2", "red")
+  ccols = c("black", "forestgreen", "blue3", "dodgerblue", "darkgoldenrod2", "red"),
+  archive = F
 )
 }
 \arguments{
 \item{ccols}{Vector of colours to use for countries in incl}
+
+\item{archive}{Boolean: save a copy of the data? Default is F.}
 
 \item{incl}{Vector of country codes to include}
 }

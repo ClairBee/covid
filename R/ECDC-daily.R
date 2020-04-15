@@ -5,13 +5,22 @@
 #'
 #' @param incl Vector of country codes to include
 #' @param ccols Vector of colours to use for countries in incl
+#' @param archive Boolean: save a copy of the data? Default is F.
 #'
 #' @export
 #'
 ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
-                        ccols = c("black", "forestgreen", "blue3", "dodgerblue", "darkgoldenrod2", "red")) {
+                        ccols = c("black", "forestgreen", "blue3", "dodgerblue", "darkgoldenrod2", "red"),
+                       archive = F) {
 
     ecdc()
+
+    if(archive) {
+        file.copy(from = "~/PhD/Misc-notes/Covid-19/data/ecdc-data.csv",
+                  to = "~/PhD/Misc-notes/Covid-19/data/ecdc-data-prev.csv",
+                  overwrite = T)
+        write.csv(data, "~/PhD/Misc-notes/Covid-19/data/ecdc-data.csv", row.names = F)
+    }
 
     makepdf(paste0("~/PhD/Misc-notes/Covid-19/plots/",max(data$daterep),".pdf"), {
 
