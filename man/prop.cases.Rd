@@ -21,9 +21,7 @@ prop.cases(
 
 \item{deaths}{Boolean: plot deaths? Default is F (plot cases)}
 
-\item{legend.rows}{Integer: how many rows in legend? Default is 5.
-
- @export}
+\item{legend.rows}{Integer: how many rows in legend? Default is 5.}
 }
 \description{
 Plot cases vs population size

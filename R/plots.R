@@ -363,7 +363,7 @@ lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
 #' @param deaths Boolean: plot deaths? Default is F (plot cases)
 #' @param legend.rows Integer: how many rows in legend? Default is 5.
 #'
-#'  @export
+#' @export
 #'
 prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
                        icols = c("magenta3", rbow(length(incl))[-1]), log = T, deaths = F,
