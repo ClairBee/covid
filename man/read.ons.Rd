@@ -4,7 +4,7 @@
 \alias{read.ons}
 \title{Generic function: read ONS data}
 \usage{
-read.ons(fnm, snm, cols, date.row, data.rows)
+read.ons(fnm, snm, cols, date.row, data.rows, rotate = F)
 }
 \arguments{
 \item{fnm}{File name to load from}
