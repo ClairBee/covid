@@ -215,6 +215,94 @@ daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE",
 
 
 
+#' Plot daily deaths
+#'
+#' @param incl Vector of country codes to include. Default is c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US").
+#' @param ccols Vector of colours to use for each country. Default is black for first country and rainbow palette for the remainder.
+#' @param show.China Boolean: show full China trajectory or truncate? Default is F (truncated).
+#' @param smooth Boolean: apply a spline smoother? Default is T.
+#' @param add.lockdowns Boolean: add points showing when lockdowns were introduced? Default is F.
+#' @param offset.dates Character: show days since 100th case ("c"), days since 10th death ("d"), or date? Default is date.
+#' @param ymx Maximum value to show on y-axis
+#' @param leg.ncols Number of columns in legend. Default is 2.
+#'
+#' @export
+#'
+daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
+                         ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
+                         show.China = F, smooth = F, add.lockdowns = F, ymx = NA, leg.ncols = 2) {
+
+    # if (add.lockdowns) {
+    #     ld <- events()
+    #     ld <- ld[grepl("ockdown", ld$event), ]
+    #     ld$matchDate <- as.POSIXct(ld$event.date, tz = "UTC")
+    #     ld <- merge(ld, data, all.x = T, by.x = c("country",
+    #                                               "matchDate"), by.y = c("geoid", "daterep"))
+    #     ldd <- switch(substr(offset.dates,1,1),
+    #                   "d" = ld$d10days, "c" = ld$n100days, ld$ndays)
+    # }
+
+    dd <- switch(substr(offset.dates,1,1),
+                 "d" = data$d10days,
+                 "c" = data$n100days,
+                 data$daterep)
+
+    xlab <- switch(substr(offset.dates,1,1),
+                   "d" = "Days since 10th confirmed death",
+                   "c" = "Days since 100th confirmed case",
+                   "Date")
+
+    if (show.China) {
+        xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl] >= 0])
+    } else {
+        xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl[!incl == "CN"]] >= 0])
+    }
+
+    if(smooth) {ttl <- "Smoothed reported deaths"} else {ttl <- "Daily reported deaths"}
+
+    if(is.na(ymx)) ymx <- max(data$deaths[data$geoid %in% incl], na.rm = T)
+
+    if(substr(offset.dates,1,1) %in% c("c","d")) {
+        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx),
+             xlab = xlab, ylab = "Daily deaths")
+    } else {
+        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx), xaxt = "n",
+             xlab = xlab, ylab = "Daily deaths")
+        axis(1, at = pretty(dd), labels = format(pretty(dd), "%m-%d"))
+    }
+
+    title(main = paste("   Downloaded on", format(max(data$daterep), "%Y-%m-%d")),
+          cex.main = 0.6, line = 0.7)
+
+    invisible(sapply(length(incl):1, function(i) {
+        id <- incl[i]
+        if(smooth) {
+            ss <- smooth.spline(dd[data$geoid == id],
+                                data$deaths[data$geoid == id], df = 20)
+            lines(ss, col = ccols[i])
+            # if(add.lockdowns){
+            #         if(id %in% ld$country) {
+            #             ld.dt <- ldd[ld$country == id]
+            #             points(ld.dt, ss$y[ss$x %in% ld.dt], pch = 5, col = ccols[i], cex = 0.8)
+            #         }
+            # }
+        } else {
+            lines(dd[data$geoid == id], data$deaths[data$geoid == id],
+                  col = ccols[i], type = "o", pch = 20, cex = 0.5)
+            # if(add.lockdowns) {
+            #     if(id %in% ld$country) {
+            #         points(ldd[ld$country == id], ld$deaths[ld$country == id],
+            #                pch = 5, col = ccols[i], cex = 0.8)
+            #     }
+            # }
+        }
+    }))
+
+    legend("topleft", legend = paste0(incl, "    "), col = ccols,
+           lty = 1, bty = "n", cex = 0.7, ncol = leg.ncols)
+}
+
+
 #' Plot cumulative cases aligned with another country's trajectory
 #'
 #' @param c1 Country to use as baseline
