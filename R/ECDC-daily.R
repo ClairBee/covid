@@ -31,8 +31,8 @@ ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
         doubling(nd = 3, label.at = 33)
         deaths.since.d10(incl = countries, ccols = ccols, log = T, doublings = NA)
 
-        daily.cases(incl = countries, ccols = ccols, smooth = F)
-        daily.cases(incl = countries, ccols = ccols)
+        daily.cases(incl = countries, ccols = ccols, smooth = "o")
+        daily.deaths(incl = countries, ccols = ccols, smooth = "o")
 
         prop.cases(incl = countries, icols = ccols)
         prop.cases(incl = countries, icols = ccols, deaths = T)

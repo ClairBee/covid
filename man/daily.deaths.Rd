@@ -9,8 +9,7 @@ daily.deaths(
   ccols = c("black", rbow(length(incl) - 1)),
   offset.dates = NA,
   show.China = F,
-  smooth = F,
-  add.lockdowns = F,
+  smooth = "o",
   ymx = NA,
   leg.ncols = 2
 )
@@ -26,11 +25,11 @@ daily.deaths(
 
 \item{smooth}{Boolean: apply a spline smoother? Default is T.}
 
-\item{add.lockdowns}{Boolean: add points showing when lockdowns were introduced? Default is F.}
-
 \item{ymx}{Maximum value to show on y-axis}
 
 \item{leg.ncols}{Number of columns in legend. Default is 2.}
+
+\item{add.lockdowns}{Boolean: add points showing when lockdowns were introduced? Default is F.}
 }
 \description{
 Plot daily deaths

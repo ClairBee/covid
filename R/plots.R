@@ -155,62 +155,80 @@ deaths.since.d10 <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", 
 #' @param incl Vector of country codes to include. Default is c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US").
 #' @param ccols Vector of colours to use for each country. Default is black for first country and rainbow palette for the remainder.
 #' @param show.China Boolean: show full China trajectory or truncate to European days since 100th confirmed case? Default is F (truncated).
-#' @param smooth Boolean: apply a spline smoother? Default is T.
-#' @param add.lockdowns Boolean: add points showing when lockdowns were introduced? Default is T.
+#' @param smooth String: apply a spline smoother? Options are "o" (overlay points on spline)", "s" (smooth), or any other character (data only). Default is "o".
+#' @param offset.dates Character: show days since 100th case ("c"), days since 10th death ("d"), or date? Default is date.
+#' @param ymx Maximum value to show on y-axis
+#' @param leg.ncols Number of columns in legend. Default is 2.
 #'
 #' @export
 #'
 daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
-                        ccols = c("black", rbow(length(incl) - 1)),
-                        show.China = F, smooth = T, add.lockdowns = T, ymx = NA) {
-
+                        ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
+                        show.China = F, smooth = "overlay", ymx = NA, leg.ncols = 2) {
     ecdc()
+
+    dd <- switch(substr(offset.dates,1,1),
+                 "d" = data$d10days,
+                 "c" = data$n100days,
+                 data$daterep)
+
+    xlab <- switch(substr(offset.dates,1,1),
+                   "d" = "Days since 10th confirmed death",
+                   "c" = "Days since 100th confirmed case",
+                   "Date")
+
     if (show.China) {
-        xrng <- c(0, max(data$n100days[data$geoid %in% incl]))
+        xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl] >= 0])
     } else {
-        xrng <- c(0, max(data$n100days[data$geoid %in% incl[!incl == "CN"]]))
+        xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl[!incl == "CN"]] >= 0])
     }
 
-    if(smooth) {ttl <- "Smoothed daily confirmed cases"} else {ttl <- "Daily confirmed cases"}
-
-    if (add.lockdowns) {
-        ld <- events()
-        ld <- ld[grepl("ockdown", ld$event), ]
-        ld$matchDate <- as.POSIXct(ld$event.date, tz = "UTC")
-        ld <- merge(ld, data, all.x = T, by.x = c("country",
-                                                 "matchDate"), by.y = c("geoid", "daterep"))
-    }
+    ttl <- switch(substr(tolower(smooth),1,1),
+                  "o" = "Daily confirmed cases",
+                  "s" = "Smoothed daily confirmed cases",
+                  "Daily confirmed cases")
 
     if(is.na(ymx)) ymx <- max(data$cases[data$geoid %in% incl], na.rm = T)
 
-    plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx),
-         xlab = "Days since 100th confirmed case",
-         ylab = "Daily confirmed cases")
+    if(substr(offset.dates,1,1) %in% c("c","d")) {
+        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx),
+             xlab = xlab, ylab = "Daily confirmed cases")
+    } else {
+        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx), xaxt = "n",
+             xlab = xlab, ylab = "Daily confirmed cases")
+        axis(1, at = pretty(dd), labels = format(pretty(dd), "%m-%d"))
+    }
     title(main = paste("   Downloaded on", format(max(data$daterep), "%Y-%m-%d")),
           cex.main = 0.6, line = -1)
 
-    invisible(sapply(1:length(incl), function(i) {
+    invisible(sapply(rev(1:length(incl)), function(i) {
         id <- incl[i]
-        if(smooth) {
-            ss <- smooth.spline(data$n100days[data$geoid == id],
+        if(substr(tolower(smooth),1,1) == "o") {
+            ss <- smooth.spline(dd[data$geoid == id],
                                 data$cases[data$geoid == id], df = 20)
             lines(ss, col = ccols[i])
-            if(add.lockdowns & id %in% ld$country) {
-                ldd <- ld$n100days[ld$country == id]
-                points(ldd, ss$y[ss$x %in% ldd], pch = 5, col = ccols[i], cex = 0.8)
-            }
+            points(dd[data$geoid == id], data$cases[data$geoid == id],
+                   col = transp(ccols[i]), pch = 20, cex = 0.5)
+            sapply(which(abs(ss$y - data$cases[data$geoid == id]) > 10), function(p) {
+
+                lines(rep(dd[data$geoid == id][p], 2),
+                      c(data$cases[data$geoid == id][p], ss$y[p]),
+                      col = transp(ccols[i]))
+            })
         } else {
-            lines(data$n100days[data$geoid == id], data$cases[data$geoid == id],
-                  col = ccols[i], type = "o", pch = 20, cex = 0.5)
-            if(add.lockdowns & id %in% ld$country) {
-                points(ld$n100days[ld$country == id], ld$cases[ld$country == id],
-                       pch = 5, col = ccols[i], cex = 0.8)
+            if(substr(tolower(smooth),1,1) == "s") {
+                ss <- smooth.spline(dd[data$geoid == id],
+                                    data$cases[data$geoid == id], df = 20)
+                lines(ss, col = ccols[i])
+            } else {
+                lines(dd[data$geoid == id], data$cases[data$geoid == id], type = "o",
+                      col = transp(ccols[i]), pch = 20, cex = 0.5)
             }
         }
     }))
 
     legend("topleft", legend = paste0(incl, "    "), col = ccols,
-           lty = 1, bty = "n", cex = 0.8)
+           lty = 1, bty = "n", cex = 0.7, ncol = leg.ncols)
 }
 
 
@@ -230,17 +248,7 @@ daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE",
 #'
 daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
                          ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
-                         show.China = F, smooth = F, add.lockdowns = F, ymx = NA, leg.ncols = 2) {
-
-    # if (add.lockdowns) {
-    #     ld <- events()
-    #     ld <- ld[grepl("ockdown", ld$event), ]
-    #     ld$matchDate <- as.POSIXct(ld$event.date, tz = "UTC")
-    #     ld <- merge(ld, data, all.x = T, by.x = c("country",
-    #                                               "matchDate"), by.y = c("geoid", "daterep"))
-    #     ldd <- switch(substr(offset.dates,1,1),
-    #                   "d" = ld$d10days, "c" = ld$n100days, ld$ndays)
-    # }
+                         show.China = F, smooth = "o", ymx = NA, leg.ncols = 2) {
 
     dd <- switch(substr(offset.dates,1,1),
                  "d" = data$d10days,
@@ -252,13 +260,16 @@ daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
                    "c" = "Days since 100th confirmed case",
                    "Date")
 
+    ttl <- switch(substr(tolower(smooth),1,1),
+                  "o" = "Daily reported deaths",
+                  "s" = "Smoothed reported deaths",
+                  "Daily reported deaths")
+
     if (show.China) {
         xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl] >= 0])
     } else {
         xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl[!incl == "CN"]] >= 0])
     }
-
-    if(smooth) {ttl <- "Smoothed reported deaths"} else {ttl <- "Daily reported deaths"}
 
     if(is.na(ymx)) ymx <- max(data$deaths[data$geoid %in% incl], na.rm = T)
 
@@ -274,30 +285,31 @@ daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
     title(main = paste("   Downloaded on", format(max(data$daterep), "%Y-%m-%d")),
           cex.main = 0.6, line = 0.7)
 
-    invisible(sapply(length(incl):1, function(i) {
+    invisible(sapply(rev(1:length(incl)), function(i) {
         id <- incl[i]
-        if(smooth) {
+        if(substr(tolower(smooth),1,1) == "o") {
             ss <- smooth.spline(dd[data$geoid == id],
                                 data$deaths[data$geoid == id], df = 20)
             lines(ss, col = ccols[i])
-            # if(add.lockdowns){
-            #         if(id %in% ld$country) {
-            #             ld.dt <- ldd[ld$country == id]
-            #             points(ld.dt, ss$y[ss$x %in% ld.dt], pch = 5, col = ccols[i], cex = 0.8)
-            #         }
-            # }
+            points(dd[data$geoid == id], data$deaths[data$geoid == id],
+                   col = transp(ccols[i]), pch = 20, cex = 0.5)
+            sapply(which(abs(ss$y - data$deaths[data$geoid == id]) > 10), function(p) {
+
+                lines(rep(dd[data$geoid == id][p], 2),
+                      c(data$deaths[data$geoid == id][p], ss$y[p]),
+                      col = transp(ccols[i]))
+            })
         } else {
-            lines(dd[data$geoid == id], data$deaths[data$geoid == id],
-                  col = ccols[i], type = "o", pch = 20, cex = 0.5)
-            # if(add.lockdowns) {
-            #     if(id %in% ld$country) {
-            #         points(ldd[ld$country == id], ld$deaths[ld$country == id],
-            #                pch = 5, col = ccols[i], cex = 0.8)
-            #     }
-            # }
+            if(substr(tolower(smooth),1,1) == "s") {
+                ss <- smooth.spline(dd[data$geoid == id],
+                                    data$deaths[data$geoid == id], df = 20)
+                lines(ss, col = ccols[i])
+            } else {
+                lines(dd[data$geoid == id], data$deaths[data$geoid == id], type = "o",
+                      col = transp(ccols[i]), pch = 20, cex = 0.5)
+            }
         }
     }))
-
     legend("topleft", legend = paste0(incl, "    "), col = ccols,
            lty = 1, bty = "n", cex = 0.7, ncol = leg.ncols)
 }

@@ -7,10 +7,11 @@
 daily.cases(
   incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
   ccols = c("black", rbow(length(incl) - 1)),
+  offset.dates = NA,
   show.China = F,
-  smooth = T,
-  add.lockdowns = T,
-  ymx = NA
+  smooth = "overlay",
+  ymx = NA,
+  leg.ncols = 2
 )
 }
 \arguments{
@@ -18,11 +19,15 @@ daily.cases(
 
 \item{ccols}{Vector of colours to use for each country. Default is black for first country and rainbow palette for the remainder.}
 
+\item{offset.dates}{Character: show days since 100th case ("c"), days since 10th death ("d"), or date? Default is date.}
+
 \item{show.China}{Boolean: show full China trajectory or truncate to European days since 100th confirmed case? Default is F (truncated).}
 
-\item{smooth}{Boolean: apply a spline smoother? Default is T.}
+\item{smooth}{String: apply a spline smoother? Options are "o" (overlay points on spline)", "s" (smooth), or any other character (data only). Default is "o".}
 
-\item{add.lockdowns}{Boolean: add points showing when lockdowns were introduced? Default is T.}
+\item{ymx}{Maximum value to show on y-axis}
+
+\item{leg.ncols}{Number of columns in legend. Default is 2.}
 }
 \description{
 Plot daily cases
