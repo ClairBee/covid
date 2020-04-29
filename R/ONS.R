@@ -9,10 +9,10 @@
 #'
 #' @export
 #'
-read.ons <- function(fnm, snm, cols, date.row, data.rows, rotate = F) {
+read.ons <- function(fnm, snm, cols, header.row , data.rows, rotate = F) {
 
     col.rng <- unlist(strsplit(cols, ":"))
-    date.rng <- paste(paste0(col.rng, date.row), collapse = ":")
+    header.rng <- paste(paste0(col.rng, header.row), collapse = ":")
 
     col.rng[1] <- LETTERS[which(LETTERS == col.rng[1])-1]
     if(grepl(":",data.rows)) {
@@ -24,15 +24,22 @@ read.ons <- function(fnm, snm, cols, date.row, data.rows, rotate = F) {
     data <- invisible(read_excel(fnm, sheet = snm, range = data.rng, col_names = F, .name_repair = "minimal"))
     df <- as.data.frame(t(as.matrix(data[,-1])))
     colnames(df) <- as.data.frame(data)[,1]
-    df$date <- as.Date(as.matrix(read_excel(fnm, sheet = snm, range = date.rng,
-                                            col_names = F, .name_repair = "minimal")))
+
+    header <- unlist(read_excel(fnm, sheet = snm, range = header.rng,
+                         col_names = F, .name_repair = "minimal"))
+
+    if(try_default(as.Date(header), T, quiet = T)) {
+        # header is not a date
+        df$cat <- header
+    } else {
+        # header is a date
+        df$dates <- as.Date(header)
+    }
 
     if(rotate) {
-        dates <- df$date
-        cn <- colnames(df)[1:(ncol(df)-1)]
         qq <- as.data.frame(t(df[,1:(ncol(df)-1)]))
-        rownames(qq) <- colnames(df)[1:(length(colnames(df))-1)]
-        colnames(qq) <- df$date
+        rownames(qq) <- colnames(df)[1:(ncol(df)-1)]
+        colnames(qq) <- df[,ncol(df)]
         qq
     } else {
         df

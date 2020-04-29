@@ -4,7 +4,7 @@
 \alias{read.ons}
 \title{Generic function: read ONS data}
 \usage{
-read.ons(fnm, snm, cols, date.row, data.rows, rotate = F)
+read.ons(fnm, snm, cols, header.row, data.rows, rotate = F)
 }
 \arguments{
 \item{fnm}{File name to load from}
@@ -13,9 +13,9 @@ read.ons(fnm, snm, cols, date.row, data.rows, rotate = F)
 
 \item{cols}{Columns to read}
 
-\item{date.row}{Row containing dates}
-
 \item{data.rows}{Rows to read}
+
+\item{date.row}{Row containing dates}
 }
 \description{
 Generic function: read ONS data
