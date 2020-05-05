@@ -11,7 +11,7 @@
 #'
 ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
                         ccols = c("black", "forestgreen", "blue3", "dodgerblue", "darkgoldenrod2", "red"),
-                       archive = F) {
+                       archive = T) {
 
     ecdc()
 

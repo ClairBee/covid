@@ -23,19 +23,27 @@ read.ons <- function(fnm, snm, cols, header.row , data.rows, rotate = F) {
 
     data <- invisible(read_excel(fnm, sheet = snm, range = data.rng, col_names = F, .name_repair = "minimal"))
     df <- as.data.frame(t(as.matrix(data[,-1])))
-    colnames(df) <- as.data.frame(data)[,1]
+    if(!is.na(data[1,1])) colnames(df) <- as.data.frame(data)[,1]
 
-    header <- unlist(read_excel(fnm, sheet = snm, range = header.rng,
-                         col_names = F, .name_repair = "minimal"))
+    header <- data.frame(read_excel(fnm, sheet = snm, range = header.rng,
+                                    col_names = F, .name_repair = "minimal"))
 
-    if(try_default(as.Date(header), T, quiet = T)) {
-        # header is not a date
-        df$cat <- header
-    } else {
-        # header is a date
-        df$dates <- as.Date(header)
+    # check for annoying extra columns in data
+    rm <- apply(header,1,"==", "Year to date")
+    if(sum(rm) > 0) {
+        df <- df[-which(rm),,drop = F]
+        header <- header[,-which(rm),drop = F]
     }
 
+    if(grepl("POSIX", class(header[1,1]))[1]) {
+        df$date <- as.Date(unlist(format(header, "%Y-%m-%d")))
+    } else {
+        if(try_default(as.Date(header), T, quiet = T)) {
+            df$cat <- unlist(header)
+        } else {
+            df$date <- as.Date(unlist(header))
+        }
+    }
     if(rotate) {
         qq <- as.data.frame(t(df[,1:(ncol(df)-1)]))
         rownames(qq) <- colnames(df)[1:(ncol(df)-1)]
