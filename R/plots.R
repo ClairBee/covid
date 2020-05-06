@@ -605,3 +605,72 @@ new.uk.cases <- function(pad.x = 0) {
     title(main = paste("   Downloaded on", format(max(uk.data$dl.dt), "%Y-%m-%d")),
           cex.main = 0.6, line = -1, adj = 0)
 }
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# MAPS                                                                              ####
+
+#' Match summary to countries used in mapping
+#'
+#' @param countries Vector of country names to match, obtained from map("world", plot = F)$names
+#'
+#' @export
+#'
+mappable.summ <- function(...) {
+
+    # get ECDC data if not already available
+    if(!exists("summ")) ecdc()
+
+    # tidy up ISO data
+    iso3166$a3[iso3166$mapname == "Kosovo"] <- "XKX"
+    iso3166$mapname <- gsub("\\(.+\\)", "", iso3166$mapname)
+
+    # match countries to eCDC data using ISO codes
+    zz <- merge(summ, iso3166, by = "a3", all.x = T)
+    zz <- zz[,c("a3", "geoid", "mapname", "sovereignty",
+                "tcases", "tdeaths", "pop2018", "cprop", "dprop")]
+
+    # remove duplicates by sovereign nation
+    zz.dup <- setNames(unique(zz[zz$geoid %in% zz$geoid[duplicated(zz$geoid)],-3]),
+                       colnames(zz)[-4])
+    zz.u <- setNames(zz[!zz$geoid %in% zz.dup$geoid,-4],
+                     colnames(zz)[-4])
+    zz <- rbind(zz.u, zz.dup)
+
+    # ignore unmatched lines for now, but don't delete
+    # zz[is.na(zz$mapname),]
+
+    # match map names to ISO3166 codes, aggregating all polygons
+    mapnames.org <- map("world", plot = F, ...)$names
+
+    mc <- data.frame("mapname" = mapnames.org,
+                     "main" = gsub("\\:.+","",mapnames.org))
+
+    # use exact matches on main country (includes all polygons)
+    df <- merge(mc, zz, by.x = "main", by.y = "mapname", sort = F, all.x = T)
+    df[match(mapnames.org, df$mapname),]
+}
+
+
+
+#' Draw map & colour according to data from mappable.summ()
+#'
+#' @param varb Variable to use to colour map. Default is tcases.
+#' @param cols Vector of colours to use in plotting. Default is rbow(11).
+#' @param intvl Vector of intervals to be used to cut variable. Must be one less than length(cols).
+#' @param ... Any other optional arguments to be passed to map("world", ...)
+#'
+#' @export
+#'
+map.totals <- function(varb = "tcases", cols = rbow(11), intvl, ...) {
+
+    ms <- mappable.summ(...)
+
+    if(missing(intvl)) {
+        intvl <- seq(0, max(ms[,varb], na.rm = T), length.out = length(cols)-1)
+    }
+
+    reset.par()
+
+    countries <- map("world", ..., plot = F)$names
+    map("world", fill = T, col = cols[findInterval(ms[,varb], intvl)], ...)
+}

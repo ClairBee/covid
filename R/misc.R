@@ -34,3 +34,8 @@ lag <- function(c1, c2, diffs = F) {
 
     if(diffs) os.tss else (-90:90)[which.min(os.tss)]
 }
+
+
+
+
+

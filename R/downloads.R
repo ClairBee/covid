@@ -50,8 +50,10 @@ ecdc <- function(dl.dt = NA) {
     data <- merge(data, cases.lwd, by = c("geoid", "daterep"), all.x = T)
 
     # summarise data per country
-    summ <- ddply(data, .(geoid), summarise, tcases = sum(cases), tdeaths = sum(deaths),
-                  pop2018 = mean(popdata2018))
+    summ <- ddply(data, .(geoid), summarise,
+                  "cnm" = min(gsub("_"," ",countriesandterritories)),
+                  "a3" = min(countryterritorycode),
+                  "tcases" = sum(cases), "tdeaths" = sum(deaths), "pop2018" = mean(popdata2018))
     summ$cprop <- 100 * summ$tcases / summ$pop2018
     summ$dprop <- 100 * summ$tdeaths / summ$pop2018
 
