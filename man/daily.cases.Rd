@@ -11,7 +11,8 @@ daily.cases(
   show.China = F,
   smooth = "overlay",
   ymx = NA,
-  leg.ncols = 2
+  leg.ncols = 2,
+  main
 )
 }
 \arguments{

@@ -164,8 +164,11 @@ deaths.since.d10 <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", 
 #'
 daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
                         ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
-                        show.China = F, smooth = "overlay", ymx = NA, leg.ncols = 2) {
+                        show.China = F, smooth = "overlay", ymx = NA, leg.ncols = 2, main) {
+
     ecdc()
+
+    if(length(incl) == 0) incl <- "UK"
 
     dd <- switch(substr(offset.dates,1,1),
                  "d" = data$d10days,
@@ -183,18 +186,19 @@ daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE",
         xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl[!incl == "CN"]] >= 0])
     }
 
-    ttl <- switch(substr(tolower(smooth),1,1),
-                  "o" = "Daily confirmed cases",
-                  "s" = "Smoothed daily confirmed cases",
-                  "Daily confirmed cases")
+    if(missing(main)) main <- switch(substr(tolower(smooth),1,1),
+                                    "o" = "Daily confirmed cases",
+                                    "s" = "Smoothed daily confirmed cases",
+                                    "Daily confirmed cases")
 
-    if(is.na(ymx)) ymx <- max(data$cases[data$geoid %in% incl], na.rm = T)
+
+    if(is.na(ymx)) ymx <- max(data$cases[data$geoid %in% incl], na.rm = T) * 1.1
 
     if(substr(offset.dates,1,1) %in% c("c","d")) {
-        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx),
+        plot(1, type = "n", xlim = xrng, main = main, ylim = c(0, ymx),
              xlab = xlab, ylab = "Daily confirmed cases")
     } else {
-        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx), xaxt = "n",
+        plot(1, type = "n", xlim = xrng, main = main, ylim = c(0, ymx), xaxt = "n",
              xlab = xlab, ylab = "Daily confirmed cases")
         axis(1, at = pretty(dd), labels = format(pretty(dd), "%m-%d"))
     }
@@ -248,7 +252,7 @@ daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE",
 #'
 daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
                          ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
-                         show.China = F, smooth = "o", ymx = NA, leg.ncols = 2) {
+                         show.China = F, smooth = "o", ymx = NA, leg.ncols = 2, main) {
 
     dd <- switch(substr(offset.dates,1,1),
                  "d" = data$d10days,
@@ -260,10 +264,10 @@ daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
                    "c" = "Days since 100th confirmed case",
                    "Date")
 
-    ttl <- switch(substr(tolower(smooth),1,1),
-                  "o" = "Daily reported deaths",
-                  "s" = "Smoothed reported deaths",
-                  "Daily reported deaths")
+    if(missing(main)) main <- switch(substr(tolower(smooth),1,1),
+                                     "o" = "Daily reported deaths",
+                                     "s" = "Smoothed reported deaths",
+                                     "Daily reported deaths")
 
     if (show.China) {
         xrng <- range(dd[data$geoid %in% incl][dd[data$geoid %in% incl] >= 0])
@@ -274,16 +278,16 @@ daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
     if(is.na(ymx)) ymx <- max(data$deaths[data$geoid %in% incl], na.rm = T)
 
     if(substr(offset.dates,1,1) %in% c("c","d")) {
-        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx),
+        plot(1, type = "n", xlim = xrng, main = main, ylim = c(0, ymx),
              xlab = xlab, ylab = "Daily deaths")
     } else {
-        plot(1, type = "n", xlim = xrng, main = ttl, ylim = c(0, ymx), xaxt = "n",
+        plot(1, type = "n", xlim = xrng, main = main, ylim = c(0, ymx), xaxt = "n",
              xlab = xlab, ylab = "Daily deaths")
         axis(1, at = pretty(dd), labels = format(pretty(dd), "%m-%d"))
     }
 
     title(main = paste("   Downloaded on", format(max(data$daterep), "%Y-%m-%d")),
-          cex.main = 0.6, line = 0.7)
+          cex.main = 0.6, line = -1)
 
     invisible(sapply(rev(1:length(incl)), function(i) {
         id <- incl[i]

@@ -52,6 +52,7 @@ ecdc <- function(dl.dt = NA) {
     # summarise data per country
     summ <- ddply(data, .(geoid), summarise,
                   "cnm" = min(gsub("_"," ",countriesandterritories)),
+                  "continent" = min(continentexp),
                   "a3" = min(countryterritorycode),
                   "tcases" = sum(cases), "tdeaths" = sum(deaths), "pop2018" = mean(popdata2018))
     summ$cprop <- 100 * summ$tcases / summ$pop2018

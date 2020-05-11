@@ -11,7 +11,8 @@ daily.deaths(
   show.China = F,
   smooth = "o",
   ymx = NA,
-  leg.ncols = 2
+  leg.ncols = 2,
+  main
 )
 }
 \arguments{
