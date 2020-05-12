@@ -4,7 +4,7 @@
 #' @param fnm File name to load from
 #' @param snm Sheet name or index
 #' @param cols Columns to read
-#' @param date.row Row containing dates
+#' @param header.row Row containing dates
 #' @param data.rows Rows to read
 #'
 #' @export
@@ -29,7 +29,7 @@ read.ons <- function(fnm, snm, cols, header.row , data.rows, rotate = F) {
                                     col_names = F, .name_repair = "minimal"))
 
     # check for annoying extra columns in data
-    rm <- apply(header,1,"==", "Year to date")
+    rm <- apply(header,1,"%in%", c("Year to date", "Weeks"))
     if(sum(rm) > 0) {
         df <- df[-which(rm),,drop = F]
         header <- header[,-which(rm),drop = F]
@@ -113,7 +113,7 @@ ons.totals <- function() {
     ons.ranges <- read.csv("./ONS-ranges.csv")
     data.frame(data.table::rbindlist(sapply(1:nrow(ons.ranges), function(i) {
         setNames(read.ons(fnm = ons.ranges$fnm[i], snm = ons.ranges$snm[i],
-                          cols = ons.ranges$cols[i], date.row = ons.ranges$date.r[i],
+                          cols = ons.ranges$cols[i], header.row = ons.ranges$date.r[i],
                           data.rows = ons.ranges$total.r[i]), c("total", "date"))
     }, simplify = F)))
 }
@@ -130,12 +130,12 @@ ons.by.cause <- function() {
 
     hist <- data.frame(data.table::rbindlist(sapply(1:5, function(i) {
         setNames(read.ons(fnm = ons.ranges$fnm[i], snm = ons.ranges$snm[i],
-                          cols = ons.ranges$cols[i], date.row = ons.ranges$date.r[i],
+                          cols = ons.ranges$cols[i], header.row = ons.ranges$date.r[i],
                           data.rows = ons.ranges$by.cause[i]), c("resp", "date"))
     }, simplify = F)))
 
     this.year <- setNames(read.ons(fnm = ons.ranges$fnm[6], snm = ons.ranges$snm[6],
-             cols = ons.ranges$cols[6], date.row = ons.ranges$date.r[6],
+             cols = ons.ranges$cols[6], header.row = ons.ranges$date.r[6],
              data.rows = ons.ranges$by.cause[6]),
              c("resp", "c19", "date"))
 
@@ -150,22 +150,22 @@ ons.by.cause <- function() {
 #' @param fnm File name to load from. Default is "./ONS/publishedweek152020.xlsx"
 #' @param snm Sheet name or index. Default is "Covid-19 - Weekly occurrences"
 #' @param cols Columns to read. Default is "C:BC"
-#' @param date.row Row containing dates. Default is "6"
+#' @param header.row Row containing dates. Default is "6"
 #' @param m.rows Rows to read for male mortality. Default is "34:53"
 #' @param f.rows Rows to read for female mortality. Default is "56:75"
 #'
 #' @export
 #'
-occurrences.by.age <- function(fnm = "./ONS/publishedweek152020.xlsx",
+occurrences.by.age <- function(fnm = "./ONS/publishedweek182020.xlsx",
                           snm = "Covid-19 - Weekly occurrences",
-                          cols = "C:BC", date.row = "6", m.rows = "34:53", f.rows = "56:75") {
+                          cols = "C:BC", header.row = "6", m.rows = "34:53", f.rows = "56:75") {
 
     df <- data.frame("cv19.m" = rowSums(read.ons(fnm = fnm, snm = snm, cols = cols,
-                                                 date.row = date.row,
+                                                 header.row = header.row,
                                                  data.rows = m.rows, rotate = T),
                                         na.rm = T),
                      "cv19.f" = rowSums(read.ons(fnm = fnm, snm = snm, cols = cols,
-                                                 date.row = date.row,
+                                                 header.row = header.row,
                                                  data.rows = f.rows, rotate = T),
                                         na.rm = T))
     df$pop.age <- rownames(df)

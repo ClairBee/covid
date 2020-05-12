@@ -5,10 +5,10 @@
 \title{Occurrences by age}
 \usage{
 occurrences.by.age(
-  fnm = "./ONS/publishedweek152020.xlsx",
+  fnm = "./ONS/publishedweek182020.xlsx",
   snm = "Covid-19 - Weekly occurrences",
   cols = "C:BC",
-  date.row = "6",
+  header.row = "6",
   m.rows = "34:53",
   f.rows = "56:75"
 )
@@ -20,7 +20,7 @@ occurrences.by.age(
 
 \item{cols}{Columns to read. Default is "C:BC"}
 
-\item{date.row}{Row containing dates. Default is "6"}
+\item{header.row}{Row containing dates. Default is "6"}
 
 \item{m.rows}{Rows to read for male mortality. Default is "34:53"}
 

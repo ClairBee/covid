@@ -13,9 +13,9 @@ read.ons(fnm, snm, cols, header.row, data.rows, rotate = F)
 
 \item{cols}{Columns to read}
 
-\item{data.rows}{Rows to read}
+\item{header.row}{Row containing dates}
 
-\item{date.row}{Row containing dates}
+\item{data.rows}{Rows to read}
 }
 \description{
 Generic function: read ONS data
