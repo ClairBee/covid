@@ -5,7 +5,7 @@
 \title{Occurrences by age}
 \usage{
 occurrences.by.age(
-  fnm = "./ONS/publishedweek182020.xlsx",
+  fnm,
   snm = "Covid-19 - Weekly occurrences",
   cols = "C:BC",
   header.row = "6",

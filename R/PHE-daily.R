@@ -24,7 +24,7 @@ phe.daily <- function(highlight = c("Hertfordshire", "Norfolk"),
     ukd <- uk.data[uk.data$Country == "England",]
     mdt <- format(max(ukd$Date, na.rm = T), "%Y-%m-%d")
 
-    makepdf(paste0("~/PhD/Misc-notes/Covid-19/plots/UK-", mdt,".pdf"), {
+    makepdf("~/PhD/Misc-notes/Covid-19/plots/phe.pdf", {
 
         plot(1, type = "n", log = "y",
              xlim = range(0, ukd$c100days, na.rm = T),

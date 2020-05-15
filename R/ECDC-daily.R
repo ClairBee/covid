@@ -22,7 +22,7 @@ ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
         write.csv(data, "~/PhD/Misc-notes/Covid-19/data/ecdc-data.csv", row.names = F)
     }
 
-    makepdf(paste0("~/PhD/Misc-notes/Covid-19/plots/",max(data$daterep),".pdf"), {
+    makepdf("~/PhD/Misc-notes/Covid-19/plots/ecdc-selected-countries.pdf", {
 
         par(mfrow = c(1,2))
 

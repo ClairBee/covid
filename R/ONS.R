@@ -108,14 +108,22 @@ ons.popn <- function() {
 #'
 #' @export
 #'
-ons.totals <- function() {
+ons.totals <- function(fnm) {
 
     ons.ranges <- read.csv("./ONS-ranges.csv")
-    data.frame(data.table::rbindlist(sapply(1:nrow(ons.ranges), function(i) {
+    prev <- data.frame(data.table::rbindlist(sapply(1:nrow(ons.ranges), function(i) {
         setNames(read.ons(fnm = ons.ranges$fnm[i], snm = ons.ranges$snm[i],
                           cols = ons.ranges$cols[i], header.row = ons.ranges$date.r[i],
                           data.rows = ons.ranges$total.r[i]), c("total", "date"))
     }, simplify = F)))
+
+    if(missing(fnm)) fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
+
+    ty <- setNames(read.ons(fnm = fnm, snm = "Weekly figures 2020",
+                            cols = "C:BC", header.row = "6", data.rows = "9"),
+                   c("total", "date"))
+
+    rbind(prev, ty)
 }
 
 
@@ -124,7 +132,7 @@ ons.totals <- function() {
 #'
 #' @export
 #'
-ons.by.cause <- function() {
+ons.by.cause <- function(fnm) {
 
     ons.ranges <- read.csv("./ONS-ranges.csv")
 
@@ -134,9 +142,10 @@ ons.by.cause <- function() {
                           data.rows = ons.ranges$by.cause[i]), c("resp", "date"))
     }, simplify = F)))
 
-    this.year <- setNames(read.ons(fnm = ons.ranges$fnm[6], snm = ons.ranges$snm[6],
-             cols = ons.ranges$cols[6], header.row = ons.ranges$date.r[6],
-             data.rows = ons.ranges$by.cause[6]),
+    if(missing(fnm)) fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
+
+    this.year <- setNames(read.ons(fnm, snm = "Weekly figures 2020",
+             cols = "C:BC", header.row = "6", data.rows = "18:19"),
              c("resp", "c19", "date"))
 
     data.frame("date" = c(hist$date, this.year$date),
@@ -156,9 +165,10 @@ ons.by.cause <- function() {
 #'
 #' @export
 #'
-occurrences.by.age <- function(fnm = "./ONS/publishedweek182020.xlsx",
-                          snm = "Covid-19 - Weekly occurrences",
-                          cols = "C:BC", header.row = "6", m.rows = "34:53", f.rows = "56:75") {
+occurrences.by.age <- function(fnm, snm = "Covid-19 - Weekly occurrences",
+                               cols = "C:BC", header.row = "6", m.rows = "34:53", f.rows = "56:75") {
+
+    if(missing(fnm)) fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
 
     df <- data.frame("cv19.m" = rowSums(read.ons(fnm = fnm, snm = snm, cols = cols,
                                                  header.row = header.row,

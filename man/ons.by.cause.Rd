@@ -4,7 +4,7 @@
 \alias{ons.by.cause}
 \title{Totals by cause of death}
 \usage{
-ons.by.cause()
+ons.by.cause(fnm)
 }
 \description{
 Totals by cause of death

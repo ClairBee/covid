@@ -4,7 +4,7 @@
 \alias{ons.totals}
 \title{Read totals}
 \usage{
-ons.totals()
+ons.totals(fnm)
 }
 \description{
 Read totals
