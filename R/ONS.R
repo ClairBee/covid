@@ -117,7 +117,8 @@ ons.totals <- function(fnm) {
                           data.rows = ons.ranges$total.r[i]), c("total", "date"))
     }, simplify = F)))
 
-    if(missing(fnm)) fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
+    if(missing(fnm)) fnm <- max(list.files("./ONS",
+                                           pattern = "2020", full.names = T))
 
     ty <- setNames(read.ons(fnm = fnm, snm = "Weekly figures 2020",
                             cols = "C:BC", header.row = "6", data.rows = "9"),
@@ -142,7 +143,8 @@ ons.by.cause <- function(fnm) {
                           data.rows = ons.ranges$by.cause[i]), c("resp", "date"))
     }, simplify = F)))
 
-    if(missing(fnm)) fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
+    if(missing(fnm)) fnm <- max(list.files("./ONS",
+                                           pattern = "2020", full.names = T))
 
     this.year <- setNames(read.ons(fnm, snm = "Weekly figures 2020",
              cols = "C:BC", header.row = "6", data.rows = "18:19"),
@@ -168,7 +170,8 @@ ons.by.cause <- function(fnm) {
 occurrences.by.age <- function(fnm, snm = "Covid-19 - Weekly occurrences",
                                cols = "C:BC", header.row = "6", m.rows = "34:53", f.rows = "56:75") {
 
-    if(missing(fnm)) fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
+    if(missing(fnm)) fnm <- max(list.files("./ONS",
+                                           pattern = "2020", full.names = T))
 
     df <- data.frame("cv19.m" = rowSums(read.ons(fnm = fnm, snm = snm, cols = cols,
                                                  header.row = header.row,

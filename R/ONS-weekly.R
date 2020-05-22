@@ -1,18 +1,21 @@
 
 #' ONS weekly plots
-#' 
+#'
 #' @export
-#' 
+#'
 ons.weekly <- function() {
-    
+
+    org.wd <- getwd()
+    setwd("~/PhD/Misc-notes/Covid-19")
+
     # deaths by cause
     {
         by.cause <- merge(ons.totals(), ons.by.cause(), by = "date", all = T)
         by.cause$nc19 <- by.cause$total - by.cause$c19
         by.cause$nc19[is.na(by.cause$nc19)] <- by.cause$total[is.na(by.cause$nc19)]
-        
+
         by.cause$nresp <- by.cause$nc19 - by.cause$resp
-        
+
         by.cause$year <- format(by.cause$date, "%Y")
         by.cause$day <- by.cause$date - as.Date(paste0(by.cause$year, "-01-01"))
         by.cause$yday <- as.Date("2020-01-01") + by.cause$day
@@ -20,13 +23,13 @@ ons.weekly <- function() {
 
     # Covid-19 deaths by age group
     by.age <- occurrences.by.age()
-    by.age$pd.m <- by.age$cv19.m / sum(by.age$cv19.m) * 100
-    by.age$pd.f <- by.age$cv19.f / sum(by.age$cv19.f) * 100
-    
-    
-    makepdf("~/PhD/Misc-notes/Covid-19/plots/ons.pdf", height = 7, width = 14, {
+    by.age$pd.m <- by.age$cv19.m / sum(by.age$cv19.m, by.age$cv19.f) * 100
+    by.age$pd.f <- by.age$cv19.f / sum(by.age$cv19.m, by.age$cv19.f) * 100
+
+
+    makepdf("./plots/ons.pdf", height = 7, width = 14, {
         par(mfrow = c(1,2))
-        
+
         # total weekly deaths
         {
             plot(by.cause$yday[by.cause$year == "2015"], by.cause$total[by.cause$year == "2015"],
@@ -40,7 +43,7 @@ ons.weekly <- function() {
             }))
             legend("topright", legend = 2015:2020, col = rbow(6), lty = 1, pch = 20, bty = "n", ncol = 2)
         }
-        
+
         # non-covid weekly deaths
         {
             plot(by.cause$yday[by.cause$year == "2015"], by.cause$nc19[by.cause$year == "2015"],
@@ -56,7 +59,7 @@ ons.weekly <- function() {
                   type = "o", pch = 4, cex = 0.8, lty = "22")
             legend("topright", legend = 2015:2020, col = rbow(6), lty = 1, pch = 20, bty = "n", ncol = 2)
         }
-        
+
         # weekly deaths involving non-covid respiratory conditions
         {
             plot(by.cause$yday[by.cause$year == "2015"], by.cause$resp[by.cause$year == "2015"],
@@ -72,7 +75,7 @@ ons.weekly <- function() {
                   type = "o", pch = 4, cex = 0.8, lty = "22")
             legend("topright", legend = 2015:2020, col = rbow(6), lty = 1, pch = 20, bty = "n", ncol = 2)
         }
-        
+
         # weekly deaths involving neither covid nor other respiratory conditions
         {
             plot(by.cause$yday[by.cause$year == "2015"], by.cause$nresp[by.cause$year == "2015"],
@@ -88,7 +91,7 @@ ons.weekly <- function() {
                   type = "o", pch = 4, cex = 0.8, lty = "22")
             legend("topright", legend = 2015:2020, col = rbow(6), lty = 1, pch = 20, bty = "n", ncol = 2)
         }
-        
+
         # mortality by age group
         {
             barplot(by.age$prop.m, names.arg = by.age$age, col = "olivedrab", las = 2,
