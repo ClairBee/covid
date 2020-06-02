@@ -494,7 +494,7 @@ prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", 
         lines(0.0001:1000,0.0001:1000*pop.units*0.01, col = "dimgrey", lty = "22")
         lines(0.0001:1000,0.0001:1000*pop.units*0.005, col = "dimgrey", lty = "22")
         text(c(0.008, 0.008), 0.008*pop.units*c(0.01, 0.005), c("1%", "0.5%"),
-             pos = c(3, 1), srt = 45, col = "dimgrey", cex = 0.8)
+             pos = c(3, 1), srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
         title(paste(main, "(log scale)"))
         legend.pos <- "topleft"
     } else {

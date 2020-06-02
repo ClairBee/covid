@@ -6,7 +6,7 @@
 \usage{
 phe.daily(
   highlight = c("Hertfordshire", "Norfolk"),
-  hcols = c("black", "orange"),
+  hcols = c("black", "red3"),
   archive = F
 )
 }
