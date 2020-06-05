@@ -470,19 +470,22 @@ lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
 #' @export
 #'
 prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
-                       icols = c("magenta3", rbow(length(incl))[-1]), log = T, deaths = F,
+                       icols = c("magenta3", rbow(length(incl))[-1]), deaths = F,
                        legend.rows = 5) {
+    log = T
     if(deaths) {
         ydata <- summ$tdeaths
         props <- round(summ$dprop[match(incl, summ$geoid)], 2)
         main <- "Total deaths vs population"
         ylab <- "Total deaths reported"
+        hl <- c(0.001, 0.0005)
     } else {
         ydata <- summ$tcases
         props <- round(summ$cprop[match(incl, summ$geoid)], 2)
         main <- "Total cases vs population"
         props <- round(summ$cprop[match(incl, summ$geoid)], 2)
         ylab <- "Total cases reported"
+        hl <- c(0.01, 0.005)
     }
 
     if(log) {
@@ -491,9 +494,9 @@ prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", 
                               xlab = "Population (millions)", ylab = ylab, xaxt = "n"))
         axis(1, at = 10^{0:5}, labels = format(10^{0:5}, scientific = F))
         axis(1, at = 10^-{1:2}, labels = format(10^-{1:2}, scientific = F))
-        lines(0.0001:1000,0.0001:1000*pop.units*0.01, col = "dimgrey", lty = "22")
-        lines(0.0001:1000,0.0001:1000*pop.units*0.005, col = "dimgrey", lty = "22")
-        text(c(0.008, 0.008), 0.008*pop.units*c(0.01, 0.005), c("1%", "0.5%"),
+        lines(0.0001:1000,0.0001:1000*pop.units*hl[1], col = "dimgrey", lty = "22")
+        lines(0.0001:1000,0.0001:1000*pop.units*hl[2], col = "dimgrey", lty = "22")
+        text(c(0.008, 0.008), 0.008*pop.units*hl, paste0(hl*100,"%"),
              pos = c(3, 1), srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
         title(paste(main, "(log scale)"))
         legend.pos <- "topleft"
@@ -501,7 +504,7 @@ prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", 
         pop.units <- 1e6; c.units <- 1
         plot(summ$pop2018/pop.units, ydata/c.units, col = "grey",
              xlab = "Population (millions)", ylab = ylab)
-        abline(0,pop.units*c(0.01, 0.005), col = "dimgrey", lty = "22")
+        abline(c(0,0),pop.units*hl, col = "dimgrey", lty = "22")
         text(1, 3e5, "1%", pos = 3, col = "dimgrey")
         title(main)
         legend.pos <- "topright"

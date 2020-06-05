@@ -7,7 +7,6 @@
 prop.cases(
   incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
   icols = c("magenta3", rbow(length(incl))[-1]),
-  log = T,
   deaths = F,
   legend.rows = 5
 )
@@ -17,11 +16,11 @@ prop.cases(
 
 \item{icols}{Vector of colours to use for each country in incl}
 
-\item{log}{Boolean: use a log scale? Default is T.}
-
 \item{deaths}{Boolean: plot deaths? Default is F (plot cases)}
 
 \item{legend.rows}{Integer: how many rows in legend? Default is 5.}
+
+\item{log}{Boolean: use a log scale? Default is T.}
 }
 \description{
 Plot cases vs population size
