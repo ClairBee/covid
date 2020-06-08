@@ -13,8 +13,6 @@ phe.daily <- function(highlight = c("Hertfordshire", "Norfolk"),
                       hcols = c("black", "red3"),
                       archive = F) {
 
-    library(rgdal); library(rgeos)
-
     tw.data()
     if(archive) {
         invisible(file.copy(from = "~/PhD/Misc-notes/Covid-19/data/phe-data.csv",
@@ -64,13 +62,6 @@ phe.daily <- function(highlight = c("Hertfordshire", "Norfolk"),
 
         # Map recent
         {
-
-            # get midpoint of each county
-            cty <- readOGR(dsn = "~/PhD/Misc-notes/Covid-19/data/counties")
-            cty <- spTransform(cty, CRS('+proj=longlat +datum=WGS84'))
-
-            df <- data.frame(cty@data, gCentroid(cty, byid = T)@coords)
-
             en <- uk.data
             en$mcty <- en$AreaCode
             en$mcty[en$mcty == "E06000058"] <- "E06000028"      # Bournemouth
@@ -84,7 +75,7 @@ phe.daily <- function(highlight = c("Hertfordshire", "Norfolk"),
             nc.int <- c(0,0.9, 5,10,20,30,40,50,100,999)
             nc.col <- c(NA, rbow(length(nc.int)-1))
 
-            lwk <- merge(lwk, data.frame(cty@data, gCentroid(cty, byid = T)@coords),
+            lwk <- merge(lwk, read.csv("~/PhD/Misc-notes/Covid-19/data/county-px.csv"),
                          by.x = "mcty", by.y = "code", all.x = T)
             lwk$col <- nc.col[findInterval(lwk$NewCases, nc.int)]
 
