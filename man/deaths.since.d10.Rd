@@ -7,7 +7,7 @@
 deaths.since.d10(
   incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
   ccols = c("black", rbow(length(incl) - 1)),
-  doublings = 3,
+  doublings = NA,
   show.China = F,
   log = F,
   main = "Selected mortality trajectories"

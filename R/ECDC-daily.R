@@ -28,7 +28,7 @@ ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
 
         cases.since.c100(add.lockdowns = T, doublings = NA,
                          incl = countries, ccols = ccols)
-        doubling(nd = 3, label.at = 33)
+        #doubling(nd = 3, label.at = 33)
         deaths.since.d10(incl = countries, ccols = ccols, log = T, doublings = NA)
 
         daily.cases(incl = countries, ccols = ccols, smooth = "o")
@@ -36,12 +36,12 @@ ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
 
         prop.cases(incl = countries, icols = ccols)
         prop.cases(incl = countries, icols = ccols, deaths = T)
-        lines(1e-04:10000, 1e-04:10000 * 1e6 * 0.0005, col = "dimgrey", lty = "22")
-        text(0.008, 0.008 * 1e6 * 0.0005, "0.05%", pos = 1,
-             srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
-        lines(1e-04:10000, 1e-04:10000 * 1e6 * 0.001, col = "dimgrey", lty = "22")
-        text(0.008, 0.008 * 1e6 * 0.001, "0.1%", pos = 1,
-             srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
+        # lines(1e-04:10000, 1e-04:10000 * 1e6 * 0.0005, col = "dimgrey", lty = "22")
+        # text(0.008, 0.008 * 1e6 * 0.0005, "0.05%", pos = 1,
+        #      srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
+        # lines(1e-04:10000, 1e-04:10000 * 1e6 * 0.001, col = "dimgrey", lty = "22")
+        # text(0.008, 0.008 * 1e6 * 0.001, "0.1%", pos = 1,
+        #      srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
 
         lw.cc.global(incl = countries, ccols = ccols, deaths = F)
         lw.cc.global(incl = countries, ccols = ccols, deaths = T, main = "Trajectory of deaths")

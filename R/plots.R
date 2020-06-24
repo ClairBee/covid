@@ -106,7 +106,7 @@ cases.since.c100 <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", 
 #'
 deaths.since.d10 <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
                               ccols = c("black", rbow(length(incl)-1)),
-                              doublings = 3, show.China = F, log = F,
+                              doublings = NA, show.China = F, log = F,
                              main = "Selected mortality trajectories") {
 
     ecdc()
@@ -471,7 +471,7 @@ lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
 #'
 prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
                        icols = c("magenta3", rbow(length(incl))[-1]), deaths = F,
-                       legend.rows = 5) {
+                       legend.rows = 5, legend = T) {
     log = T
     if(deaths) {
         ydata <- summ$tdeaths
@@ -490,7 +490,7 @@ prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", 
 
     if(log) {
         pop.units <- 1e6; c.units <- 1
-        suppressWarnings(plot(summ$pop2018/pop.units, ydata/c.units, col = "grey", log = "xy",
+        suppressWarnings(plot(summ$pop/pop.units, ydata/c.units, col = "grey", log = "xy",
                               xlab = "Population (millions)", ylab = ylab, xaxt = "n"))
         axis(1, at = 10^{0:5}, labels = format(10^{0:5}, scientific = F))
         axis(1, at = 10^-{1:2}, labels = format(10^-{1:2}, scientific = F))
@@ -499,24 +499,24 @@ prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", 
         text(c(0.008, 0.008), 0.008*pop.units*hl, paste0(hl*100,"%"),
              pos = c(3, 1), srt = par("pin")[2] / par("pin")[1] * 45, col = "dimgrey", cex = 0.8)
         title(paste(main, "(log scale)"))
-        legend.pos <- "topleft"
+        if(legend) legend.pos <- "topleft" else legend.pos <- NA
     } else {
         pop.units <- 1e6; c.units <- 1
-        plot(summ$pop2018/pop.units, ydata/c.units, col = "grey",
+        plot(summ$pop/pop.units, ydata/c.units, col = "grey",
              xlab = "Population (millions)", ylab = ylab)
         abline(c(0,0),pop.units*hl, col = "dimgrey", lty = "22")
-        text(1, 3e5, "1%", pos = 3, col = "dimgrey")
+        text(1, 3e5, "1%", pos = c(1,3), col = "dimgrey")
         title(main)
-        legend.pos <- "topright"
+        if(legend) legend.pos <- "topright" else legend.pos <- NA
     }
     invisible(sapply(1:length(incl), function(i) {
-        points(summ$pop2018[summ$geoid == incl[i]]/pop.units,
+        points(summ$pop[summ$geoid == incl[i]]/pop.units,
                ydata[summ$geoid == incl[i]]/c.units,
                bg = icols[i], pch = 21);
     }))
     legend(legend.pos, legend = paste0(incl, " (",props,")   "),
            pch = 21, pt.bg = icols, ncol = ceiling(length(incl)/legend.rows), cex = 0.8)
-    title(paste0("Downloaded on ", format(max(data$daterep), "%Y-%m-%d")), line = 0.7, cex.main = 0.8)
+    title(paste0("Downloaded on ", format(max(data$daterep), "%Y-%m-%d")), line = -1, cex.main = 0.8)
 }
 
 
@@ -634,7 +634,7 @@ mappable.summ <- function(...) {
     # match countries to eCDC data using ISO codes
     zz <- merge(summ, iso3166, by = "a3", all.x = T)
     zz <- zz[,c("a3", "geoid", "mapname", "sovereignty",
-                "tcases", "tdeaths", "pop2018", "cprop", "dprop")]
+                "tcases", "tdeaths", "pop", "cprop", "dprop")]
 
     # remove duplicates by sovereign nation
     zz.dup <- setNames(unique(zz[zz$geoid %in% zz$geoid[duplicated(zz$geoid)],-3]),

@@ -12,6 +12,9 @@ ecdc <- function(dl.dt = NA) {
     data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
                      na.strings = "", fileEncoding = "UTF-8-BOM")
 
+    data$deaths[is.na(data$deaths)] <- 0
+    data$cases[is.na(data$cases)] <- 0
+
     colnames(data) <- tolower(colnames(data))
     data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
 
@@ -54,9 +57,9 @@ ecdc <- function(dl.dt = NA) {
                   "cnm" = min(gsub("_"," ",countriesandterritories)),
                   "continent" = min(continentexp),
                   "a3" = min(countryterritorycode),
-                  "tcases" = sum(cases), "tdeaths" = sum(deaths), "pop2018" = mean(popdata2018))
-    summ$cprop <- 100 * summ$tcases / summ$pop2018
-    summ$dprop <- 100 * summ$tdeaths / summ$pop2018
+                  "tcases" = sum(cases), "tdeaths" = sum(deaths), "pop" = mean(popdata2019))
+    summ$cprop <- 100 * summ$tcases / summ$pop
+    summ$dprop <- 100 * summ$tdeaths / summ$pop
 
     assign("data", data, envir = .GlobalEnv)
     assign("summ", summ, envir = .GlobalEnv)

@@ -26,6 +26,11 @@ ons.weekly <- function() {
     by.age$pd.m <- by.age$cv19.m / sum(by.age$cv19.m, by.age$cv19.f) * 100
     by.age$pd.f <- by.age$cv19.f / sum(by.age$cv19.m, by.age$cv19.f) * 100
 
+    # Covid-19 deaths by region
+    by.region <- read.ons(fnm = max(list.files("./ONS", pattern = "2020", full.names = T)),
+                   snm = "Covid-19 - Weekly occurrences",
+                   cols = "C:BC", header.row = "6", data.rows = "77:85", rotate = F)
+
 
     makepdf("./plots/ons.pdf", height = 7, width = 14, {
         par(mfrow = c(1,2))
@@ -91,6 +96,20 @@ ons.weekly <- function() {
                   type = "o", pch = 4, cex = 0.8, lty = "22")
             legend("topright", legend = 2015:2020, col = rbow(6), lty = 1, pch = 20, bty = "n", ncol = 2)
         }
+
+
+        # weekly deaths by region
+        {
+            matplot(by.region[,10], by.region[,1:9], type = "o", lty = 1, pch = 20, col = rbow(9),
+                    cex = 0.6, xlim = range(by.region$date[!is.na(by.region$London)]),
+                    ylab = "Deaths occurred", xlab = "Date",
+                    main = "Weekly deaths from Covid-19 per region")
+            legend("topleft", colnames(by.region)[1:9], col = rbow(9), lty = 1, pch = 20, cex = 0.8,
+                   bty = "n", ncol = 2)
+
+            plot.new()
+        }
+
 
         # mortality by age group
         {

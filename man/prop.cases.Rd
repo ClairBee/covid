@@ -8,7 +8,8 @@ prop.cases(
   incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
   icols = c("magenta3", rbow(length(incl))[-1]),
   deaths = F,
-  legend.rows = 5
+  legend.rows = 5,
+  legend = T
 )
 }
 \arguments{
