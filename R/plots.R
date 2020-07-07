@@ -471,7 +471,7 @@ lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
 #'
 prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
                        icols = c("magenta3", rbow(length(incl))[-1]), deaths = F,
-                       legend.rows = 5, legend = T) {
+                       legend.rows = 5, legend = T, add.ONS = T) {
     log = T
     if(deaths) {
         ydata <- summ$tdeaths
@@ -517,6 +517,16 @@ prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", 
     legend(legend.pos, legend = paste0(incl, " (",props,")   "),
            pch = 21, pt.bg = icols, ncol = ceiling(length(incl)/legend.rows), cex = 0.8)
     title(paste0("Downloaded on ", format(max(data$daterep), "%Y-%m-%d")), line = -1, cex.main = 0.8)
+
+    if(deaths & add.ONS) {
+        fnm <- sort(list.files("~/PhD/Misc-notes/Covid-19/ONS", pattern = "2020\\.xls", full.names = T),
+                    decreasing = T)[1]
+        ons.occ <- sum(read.ons(fnm = fnm, snm = "Covid-19 - Weekly occurrences",
+                 cols = "C:BC", header.row = "6", data.rows = "9")[,1], na.rm = T)
+
+        if("UK" %in% incl) {fg.col <- "black"} else {fg.col <- "grey"}
+        points(summ$pop[summ$geoid == "UK"]/pop.units, ons.occ/c.units, col = fg.col, pch = 4, lwd = 2)
+    }
 }
 
 

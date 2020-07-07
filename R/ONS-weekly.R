@@ -31,6 +31,27 @@ ons.weekly <- function() {
                    snm = "Covid-19 - Weekly occurrences",
                    cols = "C:BC", header.row = "6", data.rows = "77:85", rotate = F)
 
+    # Occurrences vs registrations vs ECDC
+    ons <- merge(read.ons(fnm = fnm, snm = "Covid-19 - Weekly registrations",
+                          cols = "C:BC", header.row = "6", data.rows = "9"),
+                 read.ons(fnm = fnm, snm = "Covid-19 - Weekly occurrences",
+                          cols = "C:BC", header.row = "6", data.rows = "9"),
+                 by = "date")
+
+    # Match daily ECDC data to ONS weeks
+    ecdc()
+    data <- data[data$geoid == "UK",]
+    data$wk <- findInterval(data$daterep, ons$date, left.open = T)+1
+    data$wdate <- ons$date[data$wk]
+
+    ons <- setNames(merge(ons, aggregate(deaths ~ wdate,
+                                         data = data[data$geoid == "UK",],
+                                         FUN = sum),
+                          by.x = "date", by.y = "wdate"),
+                    c("date", "ons.reg", "ons.occ", "ecdc"))
+    ons$ecdc[ons$date > Sys.Date()] <- NA
+
+
 
     makepdf("./plots/ons.pdf", height = 7, width = 14, {
         par(mfrow = c(1,2))
@@ -134,6 +155,35 @@ ons.weekly <- function() {
             barplot(-by.age$pd.m, add = T, col = "olivedrab", horiz = T, xaxt = "n")
 
             legend("right", fill = c("olivedrab", "gold"), legend = c("Male", "Female"), bg = "white")
+        }
+
+        # Number of deaths reported by ONS vs CDC
+        {
+            matplot(ons$date, ons[,-1], type = "o", pch = 20, cex = 0.8, lty = 1,
+                    col = c("blue2", "red3", "black"), xaxt = "n",
+                    xlab = "Date", ylab = "Weekly deaths",
+                    xlim = range(ons$date[-(1:8)]), ylim = range(ons[,2:3], ons$ecdc/0.7, na.rm = T),
+                    main = "Reported deaths involving Covid-19 from various sources", cex.main = 0.8)
+            axis(1, at = ons$date, labels = format(ons$date, "%m-%d"))
+            legend("topright", c(paste0("ONS registrations (", sum(ons$ons.reg, na.rm = T),")"),
+                                paste0("ONS occurrences (", sum(ons$ons.occ, na.rm = T),")"),
+                                paste0("ECDC reported (", sum(ons$ecdc[!is.na(ons$ons.occ)], na.rm = T),")")),
+                   col =  c("blue2", "red3", "black"), lty = 1, pch = 20, bty = "n", cex = 0.8,
+                   title = paste0("Deaths reported up to ", max(ons$date[!is.na(ons$ons.occ)])))
+
+
+            matplot(ons$date, apply(ons[,-1], 2, cumsum), type = "o", pch = 20, cex = 0.8, lty = 1,
+                    col = c("blue2", "red3", "black"), xaxt = "n",
+                    xlab = "Date", ylab = "Cumulative deaths",
+                    xlim = range(ons$date[-(1:8)]),
+                    main = "Cumulative reported deaths involving Covid-19 from various sources", cex.main = 0.8)
+            axis(1, at = ons$date, labels = format(ons$date, "%m-%d"))
+            abline(h = (0:10)*1e4, col = transp("grey"))
+            legend("bottomright", c(paste0("ONS registrations (", sum(ons$ons.reg, na.rm = T),")"),
+                                paste0("ONS occurrences (", sum(ons$ons.occ, na.rm = T),")"),
+                                paste0("ECDC reported (", sum(ons$ecdc[!is.na(ons$ons.occ)], na.rm = T),")")),
+                   col =  c("blue2", "red3", "black"), lty = 1, pch = 20, bty = "n", cex = 0.8, bg = "white",
+                   title = paste0("Deaths reported up to ", max(ons$date[!is.na(ons$ons.occ)])))
         }
     })
 }

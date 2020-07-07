@@ -9,7 +9,8 @@ prop.cases(
   icols = c("magenta3", rbow(length(incl))[-1]),
   deaths = F,
   legend.rows = 5,
-  legend = T
+  legend = T,
+  add.ONS = T
 )
 }
 \arguments{
