@@ -27,7 +27,8 @@ ons.weekly <- function() {
     by.age$pd.f <- by.age$cv19.f / sum(by.age$cv19.m, by.age$cv19.f) * 100
 
     # Covid-19 deaths by region
-    by.region <- read.ons(fnm = max(list.files("./ONS", pattern = "2020", full.names = T)),
+    fnm <- max(list.files("./ONS", pattern = "2020", full.names = T))
+    by.region <- read.ons(fnm = fnm,
                    snm = "Covid-19 - Weekly occurrences",
                    cols = "C:BC", header.row = "6", data.rows = "77:85", rotate = F)
 
@@ -51,7 +52,10 @@ ons.weekly <- function() {
                     c("date", "ons.reg", "ons.occ", "ecdc"))
     ons$ecdc[ons$date > Sys.Date()] <- NA
 
-
+    # get PHE data to compare reported totals
+    tw.data()
+    phe.daily <- aggregate(NewCases ~ Date, data = uk.data, "sum")
+    phe.cum <- aggregate(TotalCases ~ Date, data = uk.data, "sum")
 
     makepdf("./plots/ons.pdf", height = 7, width = 14, {
         par(mfrow = c(1,2))
@@ -184,6 +188,25 @@ ons.weekly <- function() {
                                 paste0("ECDC reported (", sum(ons$ecdc[!is.na(ons$ons.occ)], na.rm = T),")")),
                    col =  c("blue2", "red3", "black"), lty = 1, pch = 20, bty = "n", cex = 0.8, bg = "white",
                    title = paste0("Deaths reported up to ", max(ons$date[!is.na(ons$ons.occ)])))
+        }
+
+        {
+            plot(data$daterep[data$geoid == "UK"], data$cases[data$geoid == "UK"], type = "o", pch = 20,
+                 cex = 0.8, xlab = "Date", ylab = "Cumulative cases reported",
+                 ylim = c(0, max(data$cases[data$geoid == "UK"], na.rm = T)),
+                 main = "Daily confirmed cases from various sources", range(ons$date[-(1:8)]))
+            abline(h = (0:20)*1000, col = transp("grey"))
+            points(phe.daily, type = "o", pch = 20, cex = 0.8, col = "red3")
+            points(phe.daily$Date + 3, phe.daily$NewCases, type = "l", lty = 2, col = "blue2")
+            legend("topright", c("ECDC", "PHE", "PHE + 3 days"), col = c("black", "red2", "blue2"),
+                   pch = c(20, 20, NA), lty = c(1,1,2))
+
+            plot(data$daterep[data$geoid == "UK"], data$cCases[data$geoid == "UK"], type = "o", pch = 20,
+                 cex = 0.8, xlab = "Date", ylab = "Cumulative cases reported",
+                 main = "Total confirmed cases from various sources", range(ons$date[-(1:8)]))
+            abline(h = seq(0,5e5,5e4), col = transp("grey"))
+            points(phe.cum, type = "o", pch = 20, cex = 0.8, col = "red3")
+            legend("topleft", c("ECDC", "PHE"), col = c("black", "red2"), pch = 20)
         }
     })
 }
