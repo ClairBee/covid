@@ -12,15 +12,15 @@ ecdc <- function(dl.dt = NA) {
     data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
                      na.strings = "", fileEncoding = "UTF-8-BOM")
 
-    data$deaths[is.na(data$deaths)] <- 0
-    data$cases[is.na(data$cases)] <- 0
-
     colnames(data) <- tolower(colnames(data))
     data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
 
     # add date of & days since first case
     data$day.0 <- stats::ave(data$daterep, data$geoid, FUN = min)
     data$ndays <- as.integer(difftime(data$daterep, data$day.0, units = "day"))
+
+    data$deaths[is.na(data$deaths)] <- 0
+    data$cases[is.na(data$cases)] <- 0
 
     # cumulative number of cases & deaths
     data <- data[order(data$daterep),]

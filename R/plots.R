@@ -166,7 +166,21 @@ daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE",
                         ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
                         show.China = F, smooth = "overlay", ymx = NA, leg.ncols = 2, main) {
 
-    ecdc()
+    # get data from ECDC (download string updated on 2020-04-13)
+    data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
+                     na.strings = "", fileEncoding = "UTF-8-BOM")
+
+    colnames(data) <- tolower(colnames(data))
+    data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
+
+    # add date of & days since first case
+    data$day.0 <- stats::ave(data$daterep, data$geoid, FUN = min)
+    data$ndays <- as.integer(difftime(data$daterep, data$day.0, units = "day"))
+
+    # remove negative reported cases
+    data <- data[data$cases >= 0,]
+    data <- data[order(data$daterep),]
+    data$cCases <- stats::ave(data$cases, data$geoid, FUN = cumsum)
 
     if(length(incl) == 0) incl <- "UK"
 
@@ -253,6 +267,22 @@ daily.cases <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE",
 daily.deaths <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US"),
                          ccols = c("black", rbow(length(incl) - 1)), offset.dates = NA,
                          show.China = F, smooth = "o", ymx = NA, leg.ncols = 2, main) {
+
+    # get data from ECDC (download string updated on 2020-04-13)
+    data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
+                     na.strings = "", fileEncoding = "UTF-8-BOM")
+
+    colnames(data) <- tolower(colnames(data))
+    data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
+
+    # add date of & days since first case
+    data$day.0 <- stats::ave(data$daterep, data$geoid, FUN = min)
+    data$ndays <- as.integer(difftime(data$daterep, data$day.0, units = "day"))
+
+    # remove negative reported cases
+    data <- data[data$deaths >= 0,]
+    data <- data[order(data$daterep),]
+    data$cDeaths <- stats::ave(data$deaths, data$geoid, FUN = cumsum)
 
     dd <- switch(substr(offset.dates,1,1),
                  "d" = data$d10days,
@@ -472,6 +502,8 @@ lw.cc.global <- function(incl = c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE"
 prop.cases <- function(incl = c("UK", "US", "CN", "IT", "BE", "BR", "DE", "ES", "FR", "IN"),
                        icols = c("magenta3", rbow(length(incl))[-1]), deaths = F,
                        legend.rows = 5, legend = T, add.ONS = T) {
+    ecdc()
+
     log = T
     if(deaths) {
         ydata <- summ$tdeaths
