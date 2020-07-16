@@ -579,25 +579,26 @@ c19.plot <- function(ccd = "UK", lth = 10, ds = 5, c.ymx, xmin = as.Date("2020-0
                      main = paste0("Reported cases & deaths in ",ccd)) {
 
     # only reload data if necessary
-    if(!exists("data")) {
-        data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
-                         na.strings = "", fileEncoding = "UTF-8-BOM")
-        colnames(data) <- tolower(colnames(data))
-        data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
-    }
+    if(!exists("summ")) ecdc()
 
     # remove negative reported cases
     cc <- data[data$geoid == ccd & data$cases >= 0,c("daterep", "cases")]
     cd <- data[data$geoid == ccd & data$deaths >= 0,c("daterep", "deaths")]
+
+    if(is.na(xmin)) {
+        xmin <- min(cc$daterep, cd$daterep)
+    } else {
+        cc <- cc[cc$daterep >= xmin,]
+        cd <- cd[cd$daterep >= xmin,]
+    }
 
     sc <- smooth.spline(cc, df = 21)
     sd <- smooth.spline(cd, df = 21)
 
     dd <- sort(unique(cc$daterep, cd$daterep))
 
-    if(is.na(xmin)) xmin <- min(cc$daterep, cd$daterep)
     xrng <- c(xmin, max(cc$daterep, cd$daterep))
-    if(missing(c.ymx)) c.ymx <- max(cc$cases, na.rm = T) * 1.1
+    if(missing(c.ymx)) c.ymx <- max(c(cc$cases, na.rm = T), max(cd$deaths, na.rm = T) * ds) * 1.1
 
     # create empty plot
     par(mar = c(5,4,4,4))
@@ -616,7 +617,7 @@ c19.plot <- function(ccd = "UK", lth = 10, ds = 5, c.ymx, xmin = as.Date("2020-0
 
     lines(sd$x, sd$y * ds, col = "red2")
     points(cd$daterep, cd$deaths * ds, pch = 20, cex = 0.5, col = transp("red2"))
-    invisible(sapply(which(abs(sc$y - cc$cases) > lth), function(p) {
+    invisible(sapply(which(abs(sd$y - cd$deaths) > lth), function(p) {
         lines(rep(cd[p, "daterep"], 2), c(cd[p,"deaths"], sd$y[p]) * ds, col = transp("red2"))
     }))
     axis(4, at = pretty(cc$cases), labels = pretty(cc$cases) / ds, col.tick = "red2", col.axis = "red2")
