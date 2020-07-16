@@ -2,6 +2,7 @@
 
 export(add.event)
 export(ages)
+export(c19.plot)
 export(cases.since.c100)
 export(daily.cases)
 export(daily.deaths)
