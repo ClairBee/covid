@@ -45,5 +45,9 @@ ecdc.daily <- function(countries = c("UK", "CN", "KR", "IT", "ES", "US"),
 
         lw.cc.global(incl = countries, ccols = ccols, deaths = F)
         lw.cc.global(incl = countries, ccols = ccols, deaths = T, main = "Trajectory of deaths")
-    }, width = 14)
+
+
+        c19.quadrants(cases = T, label.at = 1)
+        c19.quadrants(cases = F)
+        }, width = 14)
 }

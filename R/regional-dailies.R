@@ -10,7 +10,7 @@ regional.dailies <- function() {
 
     pdf("~/PhD/Misc-notes/Covid-19/plots/regional.pdf", height = 25, width = 10); {
 
-        par(mfrow = c(5,2), mar = c(3,2,2,1))
+        par(mfrow = c(5,2), mar = c(3,3,3,1))
 
         suppressWarnings({
             invisible(sapply(c("Europe", "Asia", "America", "Africa", "Oceania"), function(r) {
@@ -92,6 +92,9 @@ regional.dailies <- function() {
                 legend("topleft", unique(ct$region), col = ccols, lty = 1, pch = 20, cex = 0.8,
                        bty = "n")
             }
+
+            c19.quadrants(cases = T, label.at = 1)
+            c19.quadrants(cases = F)
 
     }; dev.off()
 }

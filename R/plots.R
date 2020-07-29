@@ -20,6 +20,58 @@ doubling <- function(nd = 3, label.at = 25, baseline = 100) {
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # PLOTS - GLOBAL                                                                    ####
 
+
+
+#' Replicate Chartr quadrant plot
+#'
+#' @export
+#'
+c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5) {
+
+    df <- merge(aggregate(daterep ~ geoid, data = data, FUN = "max"),
+                data[,c("geoid", "daterep", "cCases", "lw.cases", "cDeaths", "lw.deaths", "popdata2019")],
+                by = c("geoid", "daterep"))
+
+    if(cases) {
+        df$c <- df$cCases / df$popdata2019 * 1e6
+        df$lw <- df$lw.cases / df$popdata2019 * 1e6
+        main <- "Countries worst affected by Covid-19 (cases attributed)"
+        xlab <- "Cases in last 7 days (per million people)"
+        ylab <- "Total cases (per million people)"
+        if(missing(lw.th)) lw.th <- 500
+        if(missing(c.th)) c.th <- 10000
+    } else {
+        df$c <- df$cDeaths / df$popdata2019 * 1e6
+        df$lw <- df$lw.deaths / df$popdata2019 * 1e6
+        main <- "Countries worst affected by Covid-19 (deaths attributed)"
+        xlab <- "Deaths in last 7 days (per million people)"
+        ylab <- "Total deaths (per million people)"
+        if(missing(lw.th)) lw.th <- 10
+        if(missing(c.th)) c.th <- 200
+    }
+
+    plot(df$lw, df$c, pch = 20, cex = 0.5, xlab = "", ylab = "",
+         main = main)
+    title(xlab = xlab, ylab = ylab, line = 2.5)
+
+    rect(-10,c.th,
+         max(df$lw, na.rm = T)*2, max(df$c, na.rm = T)*2,
+         col = transp("orange"), border = NA)
+    rect(lw.th,-100,max(df$lw, na.rm = T)*2, max(df$c, na.rm = T)*2,
+         col = transp("orange"), border = NA)
+
+    points(df$lw, df$c, pch = 20, cex = 0.6)
+    invisible(sapply(df$geoid[df$c > c.th*label.at | df$lw > lw.th*label.at],function(ccd) {
+        text(df$lw[df$geoid == ccd], df$c[df$geoid == ccd], labels = ccd,
+             cex = 0.6, pos = 4, offset = 0.2)
+    }))
+    text(df$lw[df$geoid == "UK"], df$c[df$geoid == "UK"], labels = "UK",
+         cex = 0.6, pos = 4, offset = 0.2)
+
+}
+
+
+
 #' Replicate Chartr plot showing number of cases vs time since hundredth case
 #'
 #' @param incl Vector of country codes to include. Default is c("UK", "CN", "JP", "KR", "IT", "ES", "FR", "DE", "US").

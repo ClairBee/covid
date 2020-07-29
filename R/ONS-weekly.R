@@ -191,8 +191,8 @@ ons.weekly <- function() {
         }
 
         {
-            plot(data$daterep[data$geoid == "UK"], data$cases[data$geoid == "UK"], type = "o", pch = 20,
-                 cex = 0.8, xlab = "Date", ylab = "Cumulative cases reported",
+            plot(data$daterep[data$cases >= 0], data$cases[data$cases >= 0], type = "o", pch = 20,
+                 cex = 0.8, xlab = "Date", ylab = "Cases reported",
                  ylim = c(0, max(data$cases[data$geoid == "UK"], na.rm = T)),
                  main = "Daily confirmed cases from various sources", range(ons$date[-(1:8)]))
             abline(h = (0:20)*1000, col = transp("grey"))
