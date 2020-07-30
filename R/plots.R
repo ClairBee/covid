@@ -21,6 +21,50 @@ doubling <- function(nd = 3, label.at = 25, baseline = 100) {
 # PLOTS - GLOBAL                                                                    ####
 
 
+#' Trajectory of recent vs total cases for a single country
+#'
+#' @param ccd Country code to plot. Default is UK
+#' @param add Boolean: add to existing plot? Default is F (draw new plot)
+#' @param deaths Boolean: plot deaths instead of cases? Default is F (plot cases)
+#' @param flip Boolean: flip axes? Default is F (X = total cases, Y = last week)
+#' @param ... Further graphical parameters to be passed to plotting function
+#'
+#' @export
+#'
+c19.trajectory <- function(ccd = "UK", add = F, deaths = F, flip = F, ...) {
+
+    opch <- par()$pch
+    par(pch = 20)
+    cdata <- data[data$geoid == ccd,]
+    if(deaths) {
+        cdata$c <- cdata$cDeaths / cdata$popdata2019 * 1e6
+        cdata$lw <- cdata$lw.deaths / cdata$popdata2019 * 1e6
+        c <- "deaths"
+    } else {
+        cdata$c <- cdata$cCases / cdata$popdata2019 * 1e6
+        cdata$lw <- cdata$lw.cases / cdata$popdata2019 * 1e6
+        c <- "cases"
+    }
+
+    if(add) {
+        if(flip) {
+            points(cdata$lw, cdata$c, type = "o", ...)
+        } else {
+            points(cdata$c, cdata$lw, type = "o", ...)
+        }
+    } else {
+        if(flip) {
+            plot(cdata$lw, cdata$c, type = "o",
+                 xlab = "Total cases/million", ylab = "Cases/million in last week",
+                 main = paste("Trajectory of Covid-19",c), ...)
+        } else {
+            plot(cdata$c, cdata$lw, type = "o",
+                 ylab = "Total cases/million", xlab = "Cases/million in last week",
+                 main = paste("Trajectory of Covid-19",c), ...)
+        }
+    }
+    par(pch = opch)
+}
 
 #' Replicate Chartr quadrant plot
 #'
