@@ -55,11 +55,11 @@ c19.trajectory <- function(ccd = "UK", add = F, deaths = F, flip = F, ...) {
     } else {
         if(flip) {
             plot(cdata$lw, cdata$c, type = "o",
-                 xlab = "Total cases/million", ylab = "Cases/million in last week",
+                 ylab = "Total cases/million", xlab = "Cases/million in last week",
                  main = paste("Trajectory of Covid-19",c), ...)
         } else {
             plot(cdata$c, cdata$lw, type = "o",
-                 ylab = "Total cases/million", xlab = "Cases/million in last week",
+                 xlab = "Total cases/million", ylab = "Cases/million in last week",
                  main = paste("Trajectory of Covid-19",c), ...)
         }
     }
