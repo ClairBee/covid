@@ -94,7 +94,7 @@ c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5) {
         if(missing(c.th)) c.th <- 200
     }
 
-    plot(df$lw, df$c, pch = 20, cex = 0.5, xlab = "", ylab = "",
+    plot(df$lw, df$c, pch = 20, cex = 0.5, xlab = "", ylab = "", xlim = c(0, max(df$lw, na.rm = T)),
          main = main)
     title(xlab = xlab, ylab = ylab, line = 2.5)
 
