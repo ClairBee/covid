@@ -8,56 +8,31 @@
 #'
 ecdc <- function(dl.dt = NA) {
 
-    # get data from ECDC (download string updated on 2020-04-13)
+    # get data from ECDC (download string updated on 2020-04-13, data shifted to weekly on 2020-12-14)
     data <- read.csv("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
                      na.strings = "", fileEncoding = "UTF-8-BOM")
 
     colnames(data) <- tolower(colnames(data))
-    data$daterep <- as.Date(paste0(data$year,"-",data$month,"-",data$day), format = "%Y-%m-%d")
+    data$daterep <- as.Date(data$daterep, format = "%d/%m/%Y")
 
     # add date of & days since first case
     data$day.0 <- stats::ave(data$daterep, data$geoid, FUN = min)
     data$ndays <- as.integer(difftime(data$daterep, data$day.0, units = "day"))
 
-    data$deaths[is.na(data$deaths)] <- 0
-    data$cases[is.na(data$cases)] <- 0
+    data$deaths_weekly[is.na(data$deaths_weekly)] <- 0
+    data$cases_weekly[is.na(data$cases_weekly)] <- 0
 
     # cumulative number of cases & deaths
     data <- data[order(data$daterep),]
-    data$cCases <- stats::ave(data$cases, data$geoid, FUN = cumsum)
-    data$cDeaths <- stats::ave(data$deaths, data$geoid, FUN = cumsum)
-
-    # track since 100th case occurred
-    date.c100 <- aggregate(daterep ~ geoid, data =  data[data$cCases > 100,], FUN = min)
-    colnames(date.c100) <- c("geoid", "date.c100")
-    data <- merge(data, date.c100, by = "geoid", all.x = T)
-    data$n100days <- as.integer(difftime(data$daterep, data$date.c100, units = "day"))
-
-    # track since 10th death occurred
-    date.d10 <- aggregate(daterep ~ geoid, data =  data[data$cDeaths > 10,], FUN = min)
-    colnames(date.d10) <- c("geoid", "date.d10")
-    data <- merge(data, date.d10, by = "geoid", all.x = T)
-    data$d10days <- as.integer(difftime(data$daterep, data$date.d10, units = "day"))
-
-    # add weekly running total
-    data <- data[order(data$daterep),]
-    cases.lwd <- sapply(sort(unique(data$daterep)[-(1:7)]), function(dt) {
-        lw <- data[difftime(dt, data$daterep, units = "days") %in% (0:6),]
-        df <- setNames(merge(aggregate(cases ~ geoid, data = lw, FUN = "sum"),
-                             aggregate(deaths ~ geoid, data = lw, FUN = "sum"), by = "geoid"),
-                       c("geoid", "lw.cases", "lw.deaths"))
-        df$daterep <- dt
-        df
-    }, simplify = F)
-    cases.lwd <- data.frame(data.table::rbindlist(cases.lwd))
-    data <- merge(data, cases.lwd, by = c("geoid", "daterep"), all.x = T)
+    data$cCases <- stats::ave(data$cases_weekly, data$geoid, FUN = cumsum)
+    data$cDeaths <- stats::ave(data$deaths_weekly, data$geoid, FUN = cumsum)
 
     # summarise data per country
     summ <- ddply(data, .(geoid), summarise,
                   "cnm" = min(gsub("_"," ",countriesandterritories)),
                   "continent" = min(continentexp),
                   "a3" = min(countryterritorycode),
-                  "tcases" = sum(cases), "tdeaths" = sum(deaths), "pop" = mean(popdata2019))
+                  "tcases" = sum(cases_weekly), "tdeaths" = sum(deaths_weekly), "pop" = mean(popdata2019))
     summ$cprop <- 100 * summ$tcases / summ$pop
     summ$dprop <- 100 * summ$tdeaths / summ$pop
 

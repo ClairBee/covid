@@ -4,7 +4,15 @@
 \alias{c19.trajectory}
 \title{Trajectory of recent vs total cases for a single country}
 \usage{
-c19.trajectory(ccd = "UK", add = F, deaths = F, flip = F, ...)
+c19.trajectory(
+  ccd = "UK",
+  add = F,
+  deaths = F,
+  flip = F,
+  cex = 0.8,
+  col = transp("black"),
+  ...
+)
 }
 \arguments{
 \item{ccd}{Country code to plot. Default is UK}
