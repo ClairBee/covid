@@ -53,12 +53,16 @@ c19.trajectory <- function(ccd = "UK", add = F, deaths = F, flip = F, cex = 0.8,
 #'
 #' @export
 #'
-c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5) {
+c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5, excl = "") {
 
     df <- merge(aggregate(daterep ~ geoid, data = data, FUN = "max"),
                 data[,c("geoid", "daterep", "cCases", "cases_weekly", "cDeaths", "deaths_weekly", "popdata2019")],
                 by = c("geoid", "daterep"))
+    df <- df[!(df$geoid %in% excl),]
 
+    upd <- max(data$daterep)
+
+    # add max date
     if(cases) {
         df$c <- df$cCases / df$popdata2019 * 1e6
         df$lw <- df$cases_weekly / df$popdata2019 * 1e6
@@ -80,16 +84,15 @@ c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5) {
         xmx <- round_any(max(df$c, na.rm = T), 500, ceiling)
         ymx <- round_any(max(df$lw, na.rm = T), 20, ceiling)
     }
+    main <- paste(main, "- ", upd)
 
     plot(df$c, df$lw, pch = 20, cex = 0.5, xlab = "", ylab = "", xlim = c(0, xmx), ylim = c(0, ymx),
          main = main, cex.main = 0.8, cex.axis = 0.8, xaxs = "i", yaxs = "i")
     title(xlab = xlab, ylab = ylab, line = 2.5, cex.lab = 0.8)
 
-    rect(c.th, -10,
-         max(df$c, na.rm = T)*2, max(df$lw, na.rm = T)*2,
-         col = transp("orange"), border = NA)
-    rect(-100, lw.th, max(df$c, na.rm = T)*2, max(df$lw, na.rm = T)*2,
-         col = transp("orange"), border = NA)
+    rect(c.th, -10, xmx, ymx, col = transp("orange"), border = NA)
+    rect(-100, lw.th, xmx, ymx, col = transp("orange"), border = NA)
+    rect(c.th * 10, -10, xmx, ymx, col = transp("orange"), border = NA)
 
     points(df$c, df$lw, pch = 20, cex = 0.6)
     invisible(sapply(df$geoid[df$c > c.th*label.at | df$lw > lw.th*label.at], function(ccd) {
@@ -107,13 +110,13 @@ c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5) {
 #'
 #' @export
 #'
-ecdc.daily <- function() {
+ecdc.daily <- function(excl = "") {
     ecdc()
 
-    c19.quadrants(cases = T)
+    c19.quadrants(cases = T, excl = excl)
     c19.trajectory("UK", add = T)
 
-    c19.quadrants(cases = F)
+    c19.quadrants(cases = F, excl = excl)
     c19.trajectory("UK", add = T, deaths = T)
 }
 

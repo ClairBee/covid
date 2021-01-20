@@ -4,7 +4,7 @@
 \alias{ecdc.daily}
 \title{Quick trajectory plots of latest ECDC data}
 \usage{
-ecdc.daily()
+ecdc.daily(excl = "")
 }
 \description{
 Quick trajectory plots of latest ECDC data

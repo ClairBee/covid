@@ -4,7 +4,7 @@
 \alias{c19.quadrants}
 \title{Replicate Chartr quadrant plot}
 \usage{
-c19.quadrants(cases = F, lw.th, c.th, label.at = 1.5)
+c19.quadrants(cases = F, lw.th, c.th, label.at = 1.5, excl = "")
 }
 \description{
 Replicate Chartr quadrant plot
