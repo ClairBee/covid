@@ -53,7 +53,7 @@ c19.trajectory <- function(ccd = "UK", add = F, deaths = F, flip = F, cex = 0.8,
 #'
 #' @export
 #'
-c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5, excl = "") {
+c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5, excl = "", crosshair = T) {
 
     df <- merge(aggregate(daterep ~ geoid, data = data, FUN = "max"),
                 data[,c("geoid", "daterep", "cCases", "cases_weekly", "cDeaths", "deaths_weekly", "popdata2019")],
@@ -94,6 +94,7 @@ c19.quadrants <- function(cases = F, lw.th, c.th, label.at = 1.5, excl = "") {
     rect(-100, lw.th, xmx, ymx, col = transp("orange"), border = NA)
     rect(c.th * 10, -10, xmx, ymx, col = transp("orange"), border = NA)
 
+    if(crosshair) abline(v = df$c[df$geoid == "UK"], h = df$lw[df$geoid == "UK"], lty = 2, col = "orange")
     points(df$c, df$lw, pch = 20, cex = 0.6)
     invisible(sapply(df$geoid[df$c > c.th*label.at | df$lw > lw.th*label.at], function(ccd) {
         text(df$c[df$geoid == ccd], df$lw[df$geoid == ccd], labels = ccd,
